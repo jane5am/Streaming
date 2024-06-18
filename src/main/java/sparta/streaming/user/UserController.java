@@ -12,11 +12,27 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 public class UserController {
 
     @Autowired
     private UserService userService;
+
+    // 회원가입
+    @PostMapping("signup")
+    public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
+        User user = new User();
+        user.setEmail(createUserRequestDto.getEmail());
+        user.setUserName(createUserRequestDto.getUserName());  // username 설정
+        user.setPassword(createUserRequestDto.getPassword());
+        User createdUser = userService.createUser(user);
+        ResponseMessage response = ResponseMessage.builder()
+                .data(createdUser)
+                .statusCode(201)
+                .resultMessage("User created successfully")
+                .build();
+        return ResponseEntity.status(201).body(response);
+    }
 
     @GetMapping
     public ResponseEntity<ResponseMessage> getAllUsers() {
@@ -48,19 +64,6 @@ public class UserController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
-        User user = new User();
-        user.setEmail(createUserRequestDto.getEmail());
-        user.setPassword(createUserRequestDto.getPassword());
-        User createdUser = userService.createUser(user);
-        ResponseMessage response = ResponseMessage.builder()
-                .data(createdUser)
-                .statusCode(201)
-                .resultMessage("User created successfully")
-                .build();
-        return ResponseEntity.status(201).body(response);
-    }
 
     @PutMapping()
     public ResponseEntity<ResponseMessage> updateUser(@RequestBody PutUserRequestDto userDetails) {

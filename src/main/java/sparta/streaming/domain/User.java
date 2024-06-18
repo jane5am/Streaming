@@ -16,12 +16,14 @@ public class User {
     @Column(name = "id", nullable = false)
     private Long userId;
 
+    @Column(name = "user_name", nullable = false)
+    private String userName;
     private String password;
     private String email;
     private String role;
 
     @PrePersist
     protected void onCreate() {
-        this.role = "1";
+        this.role = "USER";
     }
 }

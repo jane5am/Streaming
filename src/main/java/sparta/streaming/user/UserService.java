@@ -14,6 +14,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    //회원가입
+    public User createUser(User user) {
+        return userRepository.save(user);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -22,9 +27,7 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
+
 
 
 
