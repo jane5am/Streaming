@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   app:
-    image: spring-h-app
-    container_name: spring-h-app
+    image: streaming
+    container_name: streaming
     environment:
-      DB_URL: jdbc:mysql://spring.cv8s0y4i6voc.ap-northeast-2.rds.amazonaws.com:3306/streaming
-      DB_USERNAME: admin
-      DB_PASSWORD: test1234
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8080:8080"
     networks:
