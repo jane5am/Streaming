@@ -20,10 +20,17 @@ public class User {
     private String userName;
     private String password;
     private String email;
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @PrePersist
     protected void onCreate() {
-        this.role = "USER";
+        this.role = Role.USER;
     }
+
+    public enum Role {
+        USER, ADMIN
+    }
+
+
 }
