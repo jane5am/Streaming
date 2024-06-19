@@ -19,18 +19,28 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // 로그인
+    public Optional<User> login(String email, String password) {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isPresent() && user.get().getPassword().equals(password)) {
+            return user;
+        }
+        return Optional.empty();
+    }
+
+
+    // 전체 유저 조회
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    // id로 유저 찾기
     public Optional<User> getUserById(Long userId) {
         return userRepository.findById(userId);
     }
 
 
-
-
-
+    // 회원 수정
     public User updateUser(PutUserRequestDto putUserRequestDto) {
         Optional<User> optionalUser = userRepository.findById(putUserRequestDto.getUserId());
 
@@ -43,6 +53,7 @@ public class UserService {
         }
     }
 
+    // 회원삭제
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
