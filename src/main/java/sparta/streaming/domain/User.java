@@ -20,17 +20,21 @@ public class User {
     private String userName;
     private String password;
     private String email;
+    private String type;// 카카오인지 네이버인지
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @PrePersist
     protected void onCreate() {
         this.role = Role.USER;
+        this.type = "kakao";
     }
 
     public enum Role {
         USER, ADMIN
     }
+
+
 
 
 }
