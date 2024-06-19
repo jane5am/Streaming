@@ -5,9 +5,9 @@ services:
     image: spring-h-app
     container_name: spring-h-app
     environment:
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:mysql://spring.cv8s0y4i6voc.ap-northeast-2.rds.amazonaws.com:3306/streaming
+      DB_USERNAME: admin
+      DB_PASSWORD: test1234
     ports:
       - "8080:8080"
     networks:
