@@ -8,6 +8,7 @@ plugins {
 group = 'sparta'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
+targetCompatibility = '17'
 
 java {
     toolchain {
@@ -30,12 +31,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'mysql:mysql-connector-java:8.0.23'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
-    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    implementation 'org.springframework.boot:spring-boot-starter-validation'
+//    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+//    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
+//    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
+//    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+    implementation 'org.springframework.security:spring-security-crypto'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

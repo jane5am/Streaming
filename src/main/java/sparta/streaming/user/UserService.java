@@ -2,6 +2,8 @@ package sparta.streaming.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import sparta.streaming.domain.User;
 import sparta.streaming.dto.user.PutUserRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ public class UserService {
 
     //회원가입
     public User createUser(User user) {
+
         return userRepository.save(user);
     }
 

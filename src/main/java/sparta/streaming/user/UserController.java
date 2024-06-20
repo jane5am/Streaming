@@ -1,5 +1,7 @@
 package sparta.streaming.user;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import sparta.streaming.domain.User;
 import sparta.streaming.dto.ResponseMessage;
 import sparta.streaming.dto.user.CreateUserRequestDto;
@@ -7,16 +9,19 @@ import sparta.streaming.dto.user.PutUserRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sparta.streaming.dto.user.UserCommonDto;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
 
     @Autowired
     private UserService userService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     // 회원가입
     @PostMapping("/signup")
@@ -44,7 +49,8 @@ public class UserController {
         User user = new User();
         user.setEmail(createUserRequestDto.getEmail());
         user.setName(createUserRequestDto.getName());  // username 설정
-        user.setPassword(createUserRequestDto.getPassword());
+        user.setPassword(passwordEncoder.encode(createUserRequestDto.getPassword())); // 비밀번호 암호화
+
         User createdUser = userService.createUser(user);
         ResponseMessage response = ResponseMessage.builder()
                 .data(createdUser)
@@ -65,23 +71,25 @@ public class UserController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<ResponseMessage> login(@RequestBody CreateUserRequestDto createUserRequestDto) {
-        Optional<User> user = userService.login(createUserRequestDto.getEmail(), createUserRequestDto.getPassword());
-        if (user.isPresent()) {
-            ResponseMessage response = ResponseMessage.builder()
-                    .data(user.get())
-                    .statusCode(200)
-                    .resultMessage("Login successful")
-                    .build();
-            return ResponseEntity.ok(response);
-        } else {
-            ResponseMessage response = ResponseMessage.builder()
-                    .statusCode(401)
-                    .resultMessage("Invalid email or password")
-                    .build();
-            return ResponseEntity.status(401).body(response);
+    public ResponseEntity<ResponseMessage> login(@RequestBody UserCommonDto userCommonDto) {
+        Optional<User> userOptional = userService.idCheck(userCommonDto.getEmail());
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (passwordEncoder.matches(userCommonDto.getPassword(), user.getPassword())) {
+                ResponseMessage response = ResponseMessage.builder()
+                        .statusCode(200)
+                        .resultMessage("Login successful")
+                        .build();
+                return ResponseEntity.ok(response);
+            }
         }
-    }
+        ResponseMessage response = ResponseMessage.builder()
+                .statusCode(401)
+                .resultMessage("Invalid email or password")
+                .build();
+        return ResponseEntity.status(401).body(response);
+        }
+
 
 //
 //    @PostMapping("/users")
