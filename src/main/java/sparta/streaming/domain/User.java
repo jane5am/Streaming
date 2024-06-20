@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Data
 @AllArgsConstructor // 지정하는 모든 필드에 대해 생성자 만들어줌
@@ -18,7 +17,6 @@ public class User {
     private Long userId;
 
     @Column(name = "name", nullable = false)
-//    private String userName;
     private String name;
 
     @Column(nullable = false)
@@ -27,7 +25,6 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
     private String type;// 카카오인지 네이버인지
 
     @Enumerated(EnumType.STRING)
@@ -37,14 +34,21 @@ public class User {
     @PrePersist
     protected void onCreate() {
         this.role = Role.USER;
-        this.type = "kakao";
+        this.type = null;
     }
 
     public enum Role {
         USER, SELLER
     }
 
+    public User (String userId,String email, String type){
+        this.userId = Long.valueOf(userId);
+        this.password = "Passw0rd";
+        this.email = email;
+        this.type = type;
+        this.role = Role.USER;
 
+    }
 
 
 }

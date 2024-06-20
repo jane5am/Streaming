@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.OAuth2AuthorizationSuccessHandler;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,6 +24,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import sparta.streaming.filter.JwtAuthenticationFilter;
+import sparta.streaming.handler.OAuth2SuccessHandler;
 
 import java.io.IOException;
 
@@ -33,9 +35,10 @@ import java.io.IOException;
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final DefaultOAuth2UserService oAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
-
         httpSecurity.cors(cors -> cors
                 .configurationSource(corsConfigurationSource())
         )
@@ -45,13 +48,16 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//세션유지하지않겠다
         )
                 .authorizeHttpRequests(request -> request
-                .requestMatchers("/","/api/v1/auth/**","oauth2/**").permitAll()//이 패턴에 대해서는 모두 허용하겠다
-                .requestMatchers("/api/v1/user/**").hasRole("USER")
-                .requestMatchers("/api/v1/admin/**").hasRole("SELLER")
-                                .anyRequest().authenticated()
+                    .requestMatchers("/","/api/v1/auth/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
+                    .requestMatchers("/api/v1/user/**").hasRole("USER")
+                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                                    .anyRequest().authenticated()
                 )
-                    .oauth2Login(oauth2 ->oauth2.redirectionEndpoint(endpoint ->endpoint.baseUri("/oauth2/callback/*"))
-                    .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService))
+                    .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2"))
+                        .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
+                        .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
@@ -68,7 +74,7 @@ public class WebSecurityConfig {
         corsConfiguration.addAllowedHeader("*"); // 모든 헤더에 대해 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/user/**", corsConfiguration);
+        source.registerCorsConfiguration("/api/v1/**", corsConfiguration);
 
         return source;
     }
