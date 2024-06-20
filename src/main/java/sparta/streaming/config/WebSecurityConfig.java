@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -31,7 +32,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-
+    private final DefaultOAuth2UserService oAuth2UserService;
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
 
@@ -44,11 +45,13 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//세션유지하지않겠다
         )
                 .authorizeHttpRequests(request -> request
-                .requestMatchers("/","/api/user/**").permitAll()//이 패턴에 대해서는 모두 허용하겠다
-                .requestMatchers("/api/user/**").hasRole("USER")
-                .requestMatchers("/api/seller/**").hasRole("SELLER")
+                .requestMatchers("/","/api/v1/auth/**","oauth2/**").permitAll()//이 패턴에 대해서는 모두 허용하겠다
+                .requestMatchers("/api/v1/user/**").hasRole("USER")
+                .requestMatchers("/api/v1/admin/**").hasRole("SELLER")
                                 .anyRequest().authenticated()
-
+                )
+                    .oauth2Login(oauth2 ->oauth2.redirectionEndpoint(endpoint ->endpoint.baseUri("/oauth2/callback/*"))
+                    .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService))
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(new FailedAuthenticationEntryPoint())
@@ -84,3 +87,4 @@ class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.getWriter().write("{\"code\":\"NP\",\"message\" : \"No permission:}");
     }
 }
+
