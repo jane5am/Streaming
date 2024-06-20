@@ -11,7 +11,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> { // 엔티티 클래스, PK의 타입
     Optional<User> findByEmail(String email);
 
-    User findByUserId(String userId);
+    User findByUserId(Long userId);
+
 //    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN TRUE ELSE FALSE END FROM User u WHERE u.email = :email")
 //    boolean existsByEmail(@Param("email") String email);
 //

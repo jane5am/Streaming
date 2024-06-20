@@ -44,9 +44,9 @@ public class WebSecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//세션유지하지않겠다
         )
                 .authorizeHttpRequests(request -> request
-                .requestMatchers("/","/api/v1/auth/**").permitAll()//이 패턴에 대해서는 모두 허용하겠다
-                .requestMatchers("/api/v1/user/**").hasRole("USER")
-                .requestMatchers("/api/v1/seller/**").hasRole("SELLER")
+                .requestMatchers("/","/api/user/**").permitAll()//이 패턴에 대해서는 모두 허용하겠다
+                .requestMatchers("/api/user/**").hasRole("USER")
+                .requestMatchers("/api/seller/**").hasRole("SELLER")
                                 .anyRequest().authenticated()
 
                 )
@@ -65,7 +65,7 @@ public class WebSecurityConfig {
         corsConfiguration.addAllowedHeader("*"); // 모든 헤더에 대해 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/v1/**", corsConfiguration);
+        source.registerCorsConfiguration("/user/**", corsConfiguration);
 
         return source;
     }
