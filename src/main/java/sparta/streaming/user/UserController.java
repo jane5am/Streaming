@@ -31,18 +31,20 @@ public class UserController {
             return ResponseEntity.status(400).body(response);
         }
 
+        // 비밀번호 검증
+        String password = createUserRequestDto.getPassword();
+        if (!isPasswordValid(password)) {
+            ResponseMessage response = ResponseMessage.builder()
+                    .statusCode(400)
+                    .resultMessage("Password does not meet the security requirements")
+                    .build();
+            return ResponseEntity.status(400).body(response);
+        }
 
         User user = new User();
         user.setEmail(createUserRequestDto.getEmail());
         user.setName(createUserRequestDto.getName());  // username 설정
         user.setPassword(createUserRequestDto.getPassword());
-
-//        // 아이디 중복체크
-//
-//        if( userService.idCheck(createUserRequestDto.getEmail()) ){
-//
-//
-//        }
         User createdUser = userService.createUser(user);
         ResponseMessage response = ResponseMessage.builder()
                 .data(createdUser)
@@ -51,6 +53,13 @@ public class UserController {
                 .build();
         return ResponseEntity.status(201).body(response);
     }
+
+    // 비밀번호 유효성 검사
+    private boolean isPasswordValid(String password) {
+        String passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*?_])[A-Za-z\\d!@#$%^&*?_]{8,16}$";
+        return password.matches(passwordPattern);
+    }
+
 
 
 
