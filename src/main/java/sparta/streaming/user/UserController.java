@@ -23,7 +23,7 @@ public class UserController {
     public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
         User user = new User();
         user.setEmail(createUserRequestDto.getEmail());
-        user.setUserName(createUserRequestDto.getUserName());  // username 설정
+        user.setName(createUserRequestDto.getName());  // username 설정
         user.setPassword(createUserRequestDto.getPassword());
         User createdUser = userService.createUser(user);
         ResponseMessage response = ResponseMessage.builder()
@@ -33,6 +33,8 @@ public class UserController {
                 .build();
         return ResponseEntity.status(201).body(response);
     }
+
+
 
     // 로그인
     @PostMapping("/login")

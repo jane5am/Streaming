@@ -6,11 +6,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class CreateUserRequestDto extends UserCommonDto {
-//    private String userName;
 
-//    private String email;
-//    private String password;
-    private String userName;  // 필드 이름을 userName으로 사용
-
+    private String name;  // 필드 이름을 name으로 사용
 
 }
