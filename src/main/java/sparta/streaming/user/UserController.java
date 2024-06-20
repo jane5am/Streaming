@@ -21,10 +21,28 @@ public class UserController {
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
+
+        // 아이디 중복체크
+        if (userService.idCheck(createUserRequestDto.getEmail()).isPresent()) {
+            ResponseMessage response = ResponseMessage.builder()
+                    .statusCode(400)
+                    .resultMessage("Email is already in use")
+                    .build();
+            return ResponseEntity.status(400).body(response);
+        }
+
+
         User user = new User();
         user.setEmail(createUserRequestDto.getEmail());
         user.setName(createUserRequestDto.getName());  // username 설정
         user.setPassword(createUserRequestDto.getPassword());
+
+//        // 아이디 중복체크
+//
+//        if( userService.idCheck(createUserRequestDto.getEmail()) ){
+//
+//
+//        }
         User createdUser = userService.createUser(user);
         ResponseMessage response = ResponseMessage.builder()
                 .data(createdUser)

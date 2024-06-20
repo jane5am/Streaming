@@ -1,12 +1,16 @@
 package sparta.streaming.user;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import sparta.streaming.domain.User;
 import sparta.streaming.dto.user.PutUserRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+//import sparta.streaming.user.provider.JwtProvider;
 
 import java.util.List;
 import java.util.Optional;
+
 
 @Service
 public class UserService {
@@ -19,6 +23,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+
     // 로그인
     public Optional<User> login(String email, String password) {
         Optional<User> user = userRepository.findByEmail(email);
@@ -26,6 +31,11 @@ public class UserService {
             return user;
         }
         return Optional.empty();
+    }
+
+    // 이메일 중복확인
+    public Optional<User> idCheck(String email) {
+        return userRepository.findByEmail(email);
     }
 
 
@@ -57,4 +67,6 @@ public class UserService {
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }
+
+
 }
