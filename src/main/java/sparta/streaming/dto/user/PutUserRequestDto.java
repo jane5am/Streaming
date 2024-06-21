@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class PutUserRequestDto extends UserCommonDto {
+public class PutUserRequestDto {
     private Long userId;
+    private String email;
 }

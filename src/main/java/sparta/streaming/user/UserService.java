@@ -73,7 +73,7 @@ public class UserService {
         Optional<User> user = idCheck(userCommonDto.getEmail());
         String token = null;
 
-        if(user.isEmpty()) {
+        if (user.isEmpty()) {
             throw new BadRequestException("Invalid email or password");
         }
 
@@ -93,40 +93,47 @@ public class UserService {
     }
 
 
-
-
-
-
-
-
     // 전체 유저 조회
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // id로 유저 찾기
-    public Optional<User> getUserById(Long userId) {
-        return userRepository.findById(userId);
 
-        // userRepository.findById(userId) 하고 없으면 exception 보내기
+    // id로 유저 찾기
+    public Optional<User> getUserById(Long userId) throws BadRequestException {
+
+        Optional<User> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            throw new BadRequestException("User not found");
+        }
+
+        return user;
     }
 
 
     // 회원 수정
     public User updateUser(PutUserRequestDto putUserRequestDto) {
+
         Optional<User> optionalUser = userRepository.findById(putUserRequestDto.getUserId());
 
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
             user.setEmail(putUserRequestDto.getEmail());
+
             return userRepository.save(user);
+
         } else {
             throw new RuntimeException("User not found with id " + putUserRequestDto.getUserId());
         }
     }
 
+
     // 회원삭제
     public void deleteUser(Long userId) {
+
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("User not found with id: " + userId);
+        }
         userRepository.deleteById(userId);
     }
 
