@@ -19,7 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Component
 public class JwtProvider {
 
-    @Value("$(secret-key")
+    @Value("${jwt.secret}")
     private String secretKey; //secretKey라는 이름으로 가져오겠다
 
     public String create(String userId){
