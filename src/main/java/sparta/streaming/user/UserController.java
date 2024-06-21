@@ -51,6 +51,7 @@ public class UserController {
         User user = new User();
         user.setEmail(createUserRequestDto.getEmail());
         user.setName(createUserRequestDto.getName());  // username 설정
+        user.setType("web");  // username 설정
         user.setPassword(passwordEncoder.encode(createUserRequestDto.getPassword())); // 비밀번호 암호화
 
         User createdUser = userService.createUser(user);

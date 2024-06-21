@@ -49,6 +49,8 @@ public class WebSecurityConfig {
         )
                 .authorizeHttpRequests(request -> request
                     .requestMatchers("/","/api/v1/auth/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
+                    .requestMatchers("/","/api/user/signup/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
+                    .requestMatchers("/","/api/user/login/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
                     .requestMatchers("/api/v1/user/**").hasRole("USER")
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                     .anyRequest().authenticated()
