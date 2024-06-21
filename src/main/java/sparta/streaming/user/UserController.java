@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sparta.streaming.dto.user.UserCommonDto;
+import sparta.streaming.user.provider.JwtProvider;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class UserController {
     @Autowired
     private UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     // 회원가입
     @PostMapping("/signup")
@@ -89,29 +91,6 @@ public class UserController {
                 .build();
         return ResponseEntity.status(401).body(response);
         }
-
-
-//
-//    @PostMapping("/users")
-//    public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
-//        User user = new User();
-//        user.setEmail(createUserRequestDto.getEmail());
-//        user.setPassword(createUserRequestDto.getPassword());
-//        user.setUserName(createUserRequestDto.getUserName());  // userName 설정
-//        User createdUser = userService.createUser(user);
-//        ResponseMessage response = ResponseMessage.builder()
-//                .data(createdUser)
-//                .statusCode(201)
-//                .resultMessage("User created successfully")
-//                .build();
-//        return ResponseEntity.status(201).body(response);
-//    }
-
-
-
-
-
-
 
 
 

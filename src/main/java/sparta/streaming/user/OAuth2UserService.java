@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import sparta.streaming.domain.CustomOAuth2User;
 import sparta.streaming.domain.User;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -31,27 +30,30 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
             exception.printStackTrace();
         }
         User user = null;
-        String userId = null;
-
+        String type = null;
+        String name = "";
         String email = "email@email.com";
-
+        String id = "";
         if( oauthClientName.equals("kakao")){
-            userId = "kakao_" +oAuth2User.getAttributes().get("id");
-            user = new User( userId, email,"kakao");
+//            type = "kakao_" +oAuth2User.getAttributes().get("id");
+            id = "kakao_" +oAuth2User.getAttributes().get("id");
+            user = new User(email, name, "kakao");
 
 
         }
         if(oauthClientName.equals("naver")){
             Map<String,String> responseMap = (Map<String,String>) oAuth2User.getAttributes().get("response");
-            userId = "naver_" + responseMap.get("id").substring(0,14);
-
+//            type = "naver_" + responseMap.get("id").substring(0,14);
+            id = "naver_" + responseMap.get("id").substring(0,14);
 
             email = responseMap.get("email");
-            user = new User( userId, email,"naver");
+            name = responseMap.get("name");
+            user = new User( email, name, "naver");
         }
 
         userRepository.save(user);
-
-        return new CustomOAuth2User(userId);
+        System.out.println("1111111111");
+        System.out.println("id : " + id);
+        return new CustomOAuth2User(id); //사용자 정보 제공하여 토큰발행
     }
 }

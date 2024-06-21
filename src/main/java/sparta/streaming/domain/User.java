@@ -34,16 +34,16 @@ public class User {
     @PrePersist
     protected void onCreate() {
         this.role = Role.USER;
-        this.type = null;
+//        this.type = "web";
     }
 
     public enum Role {
         USER, SELLER
     }
 
-    public User (String userId,String email, String type){
-        this.userId = Long.valueOf(userId);
+    public User (String email, String name, String type){
         this.password = "Passw0rd";
+        this.name = name;
         this.email = email;
         this.type = type;
         this.role = Role.USER;

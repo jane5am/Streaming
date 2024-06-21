@@ -13,7 +13,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
-    private String userId;
+
+    private String id;//OAuth2UserService에서 만든 값
 
     @Override
     public Map<String, Object> getAttributes() {
@@ -27,6 +28,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return this.userId;
+
+        return this.id;
     }
 }
