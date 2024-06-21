@@ -3,6 +3,7 @@ package sparta.streaming.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -13,6 +14,7 @@ import sparta.streaming.domain.User;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
@@ -25,7 +27,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String oauthClientName = userRequest.getClientRegistration().getClientName();
         try {
-            System.out.println(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
+            log.info(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
         } catch (Exception exception) {
             exception.printStackTrace();
         }
