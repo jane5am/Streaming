@@ -1,6 +1,7 @@
 package sparta.streaming.user;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import sparta.streaming.domain.User;
 import sparta.streaming.dto.ResponseMessage;
@@ -22,39 +23,14 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) {
+    public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) throws BadRequestException {
 
-        // 아이디 중복체크
-        if (userService.idCheck(createUserRequestDto.getEmail()).isPresent()) {
-            ResponseMessage response = ResponseMessage.builder()
-                    .statusCode(400)
-                    .resultMessage("Email is already in use")
-                    .build();
-            return ResponseEntity.status(400).body(response);
-        }
+        User createdUser = userService.createUser(createUserRequestDto);
 
-        // 비밀번호 검증
-        String password = createUserRequestDto.getPassword();
-        if (!isPasswordValid(password)) {
-            ResponseMessage response = ResponseMessage.builder()
-                    .statusCode(400)
-                    .resultMessage("Password does not meet the security requirements")
-                    .build();
-            return ResponseEntity.status(400).body(response);
-        }
-
-        User user = new User();
-        user.setEmail(createUserRequestDto.getEmail());
-        user.setName(createUserRequestDto.getName());  // username 설정
-        user.setType("web");  // username 설정
-        user.setPassword(passwordEncoder.encode(createUserRequestDto.getPassword())); // 비밀번호 암호화
-
-        User createdUser = userService.createUser(user);
         ResponseMessage response = ResponseMessage.builder()
                 .data(createdUser)
                 .statusCode(201)
@@ -63,38 +39,19 @@ public class UserController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // 비밀번호 유효성 검사
-    private boolean isPasswordValid(String password) {
-        String passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*?_])[A-Za-z\\d!@#$%^&*?_]{8,16}$";
-        return password.matches(passwordPattern);
-    }
-
-
-
-
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<ResponseMessage> login(@RequestBody UserCommonDto userCommonDto) {
-        Optional<User> userOptional = userService.idCheck(userCommonDto.getEmail());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (passwordEncoder.matches(userCommonDto.getPassword(), user.getPassword())) {
-                ResponseMessage response = ResponseMessage.builder()
-                        .statusCode(200)
-                        .resultMessage("Login successful")
-                        .build();
-                return ResponseEntity.ok(response);
-            }
-        }
+    public ResponseEntity<ResponseMessage> login(@RequestBody UserCommonDto userCommonDto) throws BadRequestException {
+
+        String token = userService.login(userCommonDto);
+
         ResponseMessage response = ResponseMessage.builder()
-                .statusCode(401)
-                .resultMessage("Invalid email or password")
-                .build();
-        return ResponseEntity.status(401).body(response);
-        }
-
-
-
+            .data(token)// 토큰 다시 준거
+            .statusCode(200)
+            .resultMessage("Login successful")
+            .build();
+        return ResponseEntity.ok(response);
+    }
 
     // 유저 전체 조회
     @GetMapping
@@ -119,7 +76,7 @@ public class UserController {
                     .resultMessage("Success")
                     .build();
             return ResponseEntity.ok(response);
-        } else {
+        } else { //else부분을 서비스에 넣기
             ResponseMessage response = ResponseMessage.builder()
                     .statusCode(404)
                     .resultMessage("User not found")
@@ -132,7 +89,9 @@ public class UserController {
     @PutMapping()
     public ResponseEntity<ResponseMessage> updateUser(@RequestBody PutUserRequestDto userDetails) {
         try {
-            User updatedUser = userService.updateUser(userDetails);
+            User updatedUser = userService.updateUser(userDetails); //exception은 서비스에서 내주기
+            //로직이랑 에러랑 붙어있는게 좋다
+            //에러는 어떤행동이 끝났을때 바로 !
             ResponseMessage response = ResponseMessage.builder()
                     .data(updatedUser)
                     .statusCode(200)
@@ -166,6 +125,7 @@ public class UserController {
                     .detailMessage(e.getMessage())
                     .build();
             return ResponseEntity.status(404).body(response);
+            // 404같은 에러중복은 메소드 따로 내주기
         }
     }
 }
