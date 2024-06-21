@@ -35,15 +35,17 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String email = "email@email.com";
         String id = "";
         if( oauthClientName.equals("kakao")){
-//            type = "kakao_" +oAuth2User.getAttributes().get("id");
             id = "kakao_" +oAuth2User.getAttributes().get("id");
+            Map<String, Object> kakaoAccount = (Map<String, Object>) oAuth2User.getAttributes().get("kakao_account");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            name = (String) profile.get("nickname");
+
             user = new User(email, name, "kakao");
 
 
         }
         if(oauthClientName.equals("naver")){
             Map<String,String> responseMap = (Map<String,String>) oAuth2User.getAttributes().get("response");
-//            type = "naver_" + responseMap.get("id").substring(0,14);
             id = "naver_" + responseMap.get("id").substring(0,14);
 
             email = responseMap.get("email");
@@ -52,8 +54,6 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         }
 
         userRepository.save(user);
-        System.out.println("1111111111");
-        System.out.println("id : " + id);
         return new CustomOAuth2User(id); //사용자 정보 제공하여 토큰발행
     }
 }
