@@ -51,6 +51,7 @@ public class WebSecurityConfig {
                     .requestMatchers("/","/api/v1/auth/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
                     .requestMatchers("/","/api/user/signup/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
                     .requestMatchers("/","/api/user/login/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
+                    .requestMatchers("/","/api/user/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
                     .requestMatchers("/api/v1/user/**").hasRole("USER")
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                     .anyRequest().authenticated()
@@ -84,14 +85,14 @@ public class WebSecurityConfig {
 }
 
 
-// 인가실패 인 경우
+// 인가 실패 인 경우
 class FailedAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        //{"code":"NP","message" : "No permission:}
+//        {"code":"NP","message" : "No permission:}
         response.getWriter().write("{\"code\":\"NP\",\"message\" : \"No permission:}");
     }
 }
