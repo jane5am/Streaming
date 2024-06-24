@@ -110,6 +110,18 @@ public class UserService {
         return user;
     }
 
+    // id로 유저 찾기
+    public Optional<User> getUserByEmail(String email) throws BadRequestException {
+
+        Optional<User> user = userRepository.findByEmail(email);
+        if (!user.isPresent()) {
+            throw new BadRequestException("User not found");
+        }
+
+        return user;
+    }
+
+
 
     // 회원 수정
     public User updateUser(PutUserRequestDto putUserRequestDto) {

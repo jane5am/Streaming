@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import sparta.streaming.domain.CustomUserDetails;
 import sparta.streaming.domain.User;
 import sparta.streaming.user.UserRepository;
 import sparta.streaming.user.provider.JwtProvider;
@@ -37,30 +38,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // request로부터 bearertoken 꺼내오는 것
         try {
             String token = parseBearerToken(request);
-            if(token == null) {
-                filterChain.doFilter(request,response);
+            if (token == null) {
+                filterChain.doFilter(request, response);
                 return;
             }
 
             String userId = jwtProvider.validate(token);
-            if(userId == null){
-                filterChain.doFilter(request,response);
+            if (userId == null) {
+                filterChain.doFilter(request, response);
                 return;
             }
 
-            User user = userRepository.findByUserId(Long.valueOf(userId));
-            String role = user.getRole().toString(); //role은 반드시 이런 형태를 갖추고 있어야함 ROLE_USER, ROLE_ADMIN
-            List<GrantedAuthority> authorities =  new ArrayList<>();
+            User user = userRepository.findByEmail(userId).orElse(null);
+            if (user == null) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            CustomUserDetails customUserDetails = new CustomUserDetails(user);
+            String role = user.getRole().toString(); // role은 반드시 이런 형태를 갖추고 있어야함 ROLE_USER, ROLE_ADMIN
+            List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(role));
 
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            AbstractAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userId, null); // 세번째 파라미터에 권한 있으면 넣기
+            AbstractAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, authorities); // 세번째 파라미터에 권한 있으면 넣기
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             securityContext.setAuthentication(authenticationToken);
             SecurityContextHolder.setContext(securityContext);
 
-        }catch (Exception exception){
+        } catch (Exception exception) {
             exception.printStackTrace();
         }
 

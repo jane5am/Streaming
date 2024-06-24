@@ -1,9 +1,13 @@
 package sparta.streaming.user;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import sparta.streaming.domain.User;
+import sparta.streaming.domain.*;
 import sparta.streaming.dto.ResponseMessage;
 import sparta.streaming.dto.user.CreateUserRequestDto;
 import sparta.streaming.dto.user.PutUserRequestDto;
@@ -11,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sparta.streaming.dto.user.UserCommonDto;
+import sparta.streaming.user.provider.JwtBlacklist;
 import sparta.streaming.user.provider.JwtProvider;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +30,7 @@ public class UserController {
     @Autowired
     private UserService userService;
     private final JwtProvider jwtProvider;
-
+    private final JwtBlacklist jwtBlacklist;
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) throws BadRequestException {
@@ -40,19 +46,29 @@ public class UserController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // 로그인
-    @PostMapping("/login")
-    public ResponseEntity<ResponseMessage> login(@RequestBody UserCommonDto userCommonDto) throws BadRequestException {
 
+    @PostMapping("/login")
+    public ResponseEntity<ResponseMessage> login(@RequestBody UserCommonDto userCommonDto, HttpServletResponse response) throws BadRequestException {
         String token = userService.login(userCommonDto);
 
-        ResponseMessage response = ResponseMessage.builder()
-                .data(token)// 토큰 다시 준거
+        // 쿠키 생성
+        String base64Token = Base64.getEncoder().encodeToString(("Bearer " + token).getBytes());
+        Cookie cookie = new Cookie("Authorization", base64Token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false); // HTTPS를 사용하는 경우에만 설정
+        cookie.setPath("/");
+        cookie.setMaxAge(3600); // 쿠키 유효 시간 설정 (1시간)
+
+        // 응답에 쿠키 추가
+        response.addCookie(cookie);
+
+        ResponseMessage responseMessage = ResponseMessage.builder()
+                .data(token) // 토큰 다시 준거
                 .statusCode(200)
                 .resultMessage("Login successful")
                 .build();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(responseMessage);
     }
 
     // 유저 전체 조회
@@ -114,4 +130,40 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    // 로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<ResponseMessage> logout(@RequestHeader(value = "Authorization", required = false) String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            ResponseMessage response = ResponseMessage.builder()
+                    .statusCode(400)
+                    .resultMessage("Invalid token")
+                    .build();
+            return ResponseEntity.status(400).body(response);
+        }
+        token = token.substring(7);
+        if (jwtBlacklist.contains(token)) {
+            ResponseMessage response = ResponseMessage.builder()
+                    .statusCode(400)
+                    .resultMessage("Token already logged out")
+                    .build();
+            return ResponseEntity.status(400).body(response);
+        }
+        jwtBlacklist.add(token);
+        ResponseMessage response = ResponseMessage.builder()
+                .statusCode(200)
+                .resultMessage("Logout successful")
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/user-info")
+    public ResponseEntity<ResponseMessage> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = customUserDetails.getUser();
+        ResponseMessage response = ResponseMessage.builder()
+                .data(user.getEmail())
+                .statusCode(200)
+                .resultMessage("User info retrieved successfully")
+                .build();
+        return ResponseEntity.ok(response);
+    }
 }
