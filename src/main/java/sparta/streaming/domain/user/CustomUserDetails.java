@@ -1,4 +1,4 @@
-package sparta.streaming.domain;
+package sparta.streaming.domain.user;
 
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
