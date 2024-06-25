@@ -52,13 +52,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = claims.get("userId", Long.class);
             String role = claims.get("role", String.class);
 
-            User user = userRepository.findById(userId).orElse(null);
-            if (user == null) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+//            User user = userRepository.findById(userId).orElse(null);
+//            if (user == null) {
+//                filterChain.doFilter(request, response);
+//                return;
+//            }
+//
+//            CustomUserDetails customUserDetails = new CustomUserDetails(user);
 
-            CustomUserDetails customUserDetails = new CustomUserDetails(user);
+            // CustomUserDetails 객체 생성
+            CustomUserDetails customUserDetails = new CustomUserDetails(userId, role);
+
+
 //            String role = user.getRole().toString(); // role은 반드시 이런 형태를 갖추고 있어야함 ROLE_USER, ROLE_ADMIN
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(role));

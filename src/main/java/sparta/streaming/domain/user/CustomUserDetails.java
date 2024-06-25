@@ -1,6 +1,7 @@
 package sparta.streaming.domain.user;
 
 import lombok.Data;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,9 +13,14 @@ import java.util.Collections;
 public class CustomUserDetails implements UserDetails {
 
     private User user;
+    @Setter
+    private Long id;
+    @Setter
+    private String role;
 
-    public CustomUserDetails(User user) {
-        this.user = user;
+    public CustomUserDetails(Long id, String role) {
+        this.id = id;
+        this.role = role;
     }
 
     @Override
@@ -29,7 +35,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+//        return user.getEmail();
+        return "";
     }
 
     @Override
@@ -51,4 +58,5 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }
