@@ -14,9 +14,7 @@ import java.sql.Date;
 @EqualsAndHashCode(callSuper = false)
 public class UpdateVideoRequestDto {
 
+    private Long userId;
     private int playTime;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date uploadDate;
 
 }

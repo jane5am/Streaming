@@ -19,11 +19,14 @@ public class Video {
     @Column(name = "id", nullable = false)
     private int videoId;
 
-    @Column(nullable = false)
-    private Long UserId;
+    @Column(name = "userId", nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
-    private int playTime; // 재생시간
+    private String title;
+
+    @Column(name = "playTime", nullable = false)
+    private int playTime; // 동영상 총 길이
 
     @Column(nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")

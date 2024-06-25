@@ -1,6 +1,9 @@
 package sparta.streaming.video;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import sparta.streaming.domain.user.User;
 import sparta.streaming.domain.video.Video;
@@ -14,37 +17,40 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class VideoService {
 
     @Autowired
     private final VideoRepository videoRepository;
-//    private VideoWatchHistoryRepository videoWatchHistoryRepository;
-
-    @Autowired
-    public VideoService(VideoRepository videoRepository) {
-        this.videoRepository = videoRepository;
-    }
 
     // 동영상 등록
-    public Video createVideo(CreateVideoRequestDto createVideoRequestDto) {
+    public Video createVideo(VideoCommonDto videoCommonDto, Long userId) {
         Video video = new Video();
-        video.setUserId(createVideoRequestDto.getUserId());
-        video.setPlayTime(createVideoRequestDto.getPlayTime());
-        System.out.println(video);
+        video.setUserId(userId);
+        video.setTitle(videoCommonDto.getTitle());
+        video.setPlayTime(videoCommonDto.getPlayTime());
+        System.out.println("video.getUserId()" + video.getUserId());
         return videoRepository.save(video);
     }
-//
-//    public Video updateVideo(Long videoId, UpdateVideoRequestDto updateVideoRequestDto) {
-//        Optional<Video> videoOptional = videoRepository.findById(videoId);
-//        if (videoOptional.isPresent()) {
-//            Video video = videoOptional.get();
-//            video.setPlayTime(updateVideoRequestDto.getPlayTime());
-//            video.setUploadDate(updateVideoRequestDto.getUploadDate());
-//            return videoRepository.save(video);
-//        } else {
-//            throw new RuntimeException("Video not found with id " + videoId);
-//        }
-//    }
+
+    public Video updateVideo(Long videoId, VideoCommonDto videoCommonDto, Long userId) {
+
+        Optional<Video> videoOptional = videoRepository.findById(videoId);
+
+        if (videoOptional.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
+            throw new RuntimeException("Video not found with id " + videoId);
+        }
+
+        if (!userId.equals(videoOptional.get().getUserId())) { // 요청한 사람, 비디오 올린사람 id
+            throw new AccessDeniedException("You do not have permission to access this video.");
+        }
+
+        Video video = videoOptional.get();
+        video.setPlayTime(videoCommonDto.getPlayTime());
+        video.setTitle(videoCommonDto.getTitle());
+        return videoRepository.save(video);
+
+    }
 //
 //    public void deleteVideo(Long videoId) {
 //        videoRepository.deleteById(videoId);
@@ -58,9 +64,6 @@ public class VideoService {
 //    public List<Video> getAllVideos() {
 //        return videoRepository.findAll();
 //    }
-
-
-
 
 
 //    /**
@@ -82,7 +85,6 @@ public class VideoService {
 ////        return videoRepository.save(watchHistory);
 ////    }
 ////
-
 
 
 }

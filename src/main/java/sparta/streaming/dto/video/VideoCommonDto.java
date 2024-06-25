@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VideoCommonDto {
 
-    private Long videoId;
-    private Long UserId;
+    private String title;
+    private int playTime;
 
 }

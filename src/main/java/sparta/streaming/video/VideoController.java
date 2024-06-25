@@ -1,8 +1,5 @@
 package sparta.streaming.video;
 
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +26,12 @@ public class VideoController {
 
 //    @AuthenticationPrincipal
     @PostMapping("/create")
-    public ResponseEntity<ResponseMessage> createVideo(@RequestBody CreateVideoRequestDto createVideoRequestDto,
+    public ResponseEntity<ResponseMessage> createVideo(@RequestBody VideoCommonDto videoCommonDto,
                                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getId();
-        createVideoRequestDto.setUserId(userId);
 
-        Video createdVideo = videoService.createVideo(createVideoRequestDto);
+        Video createdVideo = videoService.createVideo(videoCommonDto, userId);
 
-        System.out.println(createdVideo);
         ResponseMessage response = ResponseMessage.builder()
                 .data(createdVideo)
                 .statusCode(201)
@@ -46,18 +41,22 @@ public class VideoController {
         return ResponseEntity.status(201).body(response);
     }
 
-//    @PutMapping("/{videoId}/update")
-//    public ResponseEntity<ResponseMessage> updateVideo(@PathVariable Long videoId, @RequestBody UpdateVideoRequestDto updateVideoRequestDto) {
-//        Video updatedVideo = videoService.updateVideo(videoId, updateVideoRequestDto);
-//
-//        ResponseMessage response = ResponseMessage.builder()
-//                .data(updatedVideo)
-//                .statusCode(200)
-//                .resultMessage("Video updated successfully")
-//                .build();
-//
-//        return ResponseEntity.ok(response);
-//    }
+    //동영상 수정
+    @PutMapping("/update/{videoId}")
+    public ResponseEntity<ResponseMessage> updateVideo(@PathVariable Long videoId, @RequestBody VideoCommonDto videoCommonDto,
+                                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getId();
+
+        Video updatedVideo = videoService.updateVideo(videoId, videoCommonDto, userId);
+
+        ResponseMessage response = ResponseMessage.builder()
+                .data(updatedVideo)
+                .statusCode(200)
+                .resultMessage("Video updated successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 //
 //    @DeleteMapping("/{videoId}/delete")
 //    public ResponseEntity<ResponseMessage> deleteVideo(@PathVariable Long videoId) {
@@ -101,31 +100,4 @@ public class VideoController {
 
 
 
-//    //1. 재생 시 기존에 조회했던 영상의 경우 최근 재생 시점부터 재생되고,
-//    //   최초 조회의 경우 처음부터 조회 됩니다. 재생 시 해당 영상의 조회수가 증가 합니다.
-//    // 동영상 재생
-//    @GetMapping("/{videoId}/play")
-//    public ResponseEntity<ResponseMessage> playVideo(@RequestBody VideoCommonDto videoCommonDto) {
-//        VideoWatchHistory videowatchHistory = videoService.playVideo(videoCommonDto.getVideoId(), videoCommonDto.getUserId());
-//        System.out.println(videowatchHistory.getVideoId());
-//        System.out.println(videowatchHistory.getUserId());
-//        System.out.println(videowatchHistory.getViewDate());
-//        System.out.println(videowatchHistory.getSourceIP());
-//
-//        ResponseMessage response = ResponseMessage.builder()
-//                .data(videowatchHistory)
-//                .statusCode(200)
-//                .resultMessage("Video played successfully")
-//                .build();
-//
-//        return ResponseEntity.ok(response);
-//
-//    }
-
-//    @PostMapping("/{videoId}/pause")
-//    public VideoWatchHistory pauseVideo(@PathVariable Long videoId, @RequestParam Long userId, @RequestParam int playbackPosition) {
-//        VideoWatchHistory watchHistory = videoService.getWatchHistory(videoId, userId);
-//        watchHistory.setPlaybackPosition(playbackPosition);
-//        return videoService.saveWatchHistory(watchHistory);
-//    }
 }
