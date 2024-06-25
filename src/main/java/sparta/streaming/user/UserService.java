@@ -32,7 +32,6 @@ public class UserService {
         // 아이디 중복체크
         if (idCheck(createUserRequestDto.getEmail()).isPresent()) {
             throw new BadRequestException("Email is already in use");
-
         }
 
         // 비밀번호 검증
@@ -69,7 +68,7 @@ public class UserService {
 
         // 비밀번호 검증
         if (passwordEncoder.matches(userCommonDto.getPassword(), user.get().getPassword())) {
-            token = jwtProvider.create(user.get().getEmail());
+            token = jwtProvider.create(user.get().getUserId(), user.get().getRole().toString());
 
             return token;
         }
@@ -78,13 +77,13 @@ public class UserService {
 
     // 이메일 존재 확인
     public Optional<User> idCheck(String email) {
-
         return userRepository.findByEmail(email);
     }
 
 
     // 전체 유저 조회
     public List<User> getAllUsers() {
+
         return userRepository.findAll();
     }
 
@@ -99,18 +98,6 @@ public class UserService {
 
         return user;
     }
-
-    // id로 유저 찾기
-    public Optional<User> getUserByEmail(String email) throws BadRequestException {
-
-        Optional<User> user = userRepository.findByEmail(email);
-        if (!user.isPresent()) {
-            throw new BadRequestException("User not found");
-        }
-
-        return user;
-    }
-
 
 
     // 회원 수정
