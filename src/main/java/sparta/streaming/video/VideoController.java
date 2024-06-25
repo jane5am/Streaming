@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import sparta.streaming.domain.user.CustomUserDetails;
 import sparta.streaming.domain.video.Video;
 import sparta.streaming.domain.video.VideoWatchHistory;
 import sparta.streaming.dto.ResponseMessage;
@@ -28,13 +29,9 @@ public class VideoController {
 
 //    @AuthenticationPrincipal
     @PostMapping("/create")
-    public ResponseEntity<ResponseMessage> createVideo(@RequestBody CreateVideoRequestDto createVideoRequestDto,  HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        Claims claims = jwtProvider.validate(token);
-        if (claims == null) {
-            return ResponseEntity.status(403).body(ResponseMessage.builder().statusCode(403).resultMessage("Invalid token").build());
-        }
-        Long userId = claims.get("userId", Long.class);
+    public ResponseEntity<ResponseMessage> createVideo(@RequestBody CreateVideoRequestDto createVideoRequestDto,
+                                                       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getId();
         createVideoRequestDto.setUserId(userId);
 
         Video createdVideo = videoService.createVideo(createVideoRequestDto);
