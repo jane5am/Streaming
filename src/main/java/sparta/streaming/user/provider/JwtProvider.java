@@ -6,6 +6,8 @@ import java.util.Base64;
 import java.util.Date;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -34,20 +36,33 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String create(String userId){
+    public String create(Long userId, String role){
         Date expiredDate = Date.from(Instant.now().plus(1,ChronoUnit.HOURS)); // 유효기한
 //        Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)); //시크릿키 가져오는 것
         Key key = getSigningKey(); //시크릿키 가져오는 것
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("role", role);
+
         //jwt 생성하여 반환
+//        String jwt = Jwts.builder()
+//                .signWith(claims, SignatureAlgorithm.HS256)
+//                .setSubject(String.valueOf(userId)).setIssuedAt(new Date()).setExpiration(expiredDate)
+//                .compact();
         String jwt = Jwts.builder()
+                .setClaims(claims)
+                .setSubject(String.valueOf(userId))
+                .setIssuedAt(new Date())
+                .setExpiration(expiredDate)
                 .signWith(key, SignatureAlgorithm.HS256)
-                .setSubject(userId).setIssuedAt(new Date()).setExpiration(expiredDate)
                 .compact();
         return jwt;
     }
+    
 
     // jwt(json웹 토큰) 검증
-    public String validate(String jwt) {
+    public Claims validate(String jwt) {
         if (jwtBlacklist.contains(jwt)) {
             return null; // 블랙리스트에 있는 토큰은 무효화
         }
@@ -55,12 +70,18 @@ public class JwtProvider {
         Key key = getSigningKey();
 
         try {
+//            String userId = Jwts.parserBuilder()
+//                    .setSigningKey(key)
+//                    .build()
+//                    .parseClaimsJws(jwt)
+//                    .getBody()
+//                    .getSubject();
+//            return userId;
             return Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(jwt)
-                    .getBody()
-                    .getSubject();
+                    .getBody();
 
         } catch (Exception exception) {
             exception.printStackTrace();

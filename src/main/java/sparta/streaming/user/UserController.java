@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -157,7 +157,8 @@ public class UserController {
     }
 
     @PostMapping("/user-info")
-    public ResponseEntity<ResponseMessage> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+    public ResponseEntity<ResponseMessage> getUserInfo( @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        //이 어노테이션은 jwt토큰으로 사용자의 정보를 알아내야할때!
         User user = customUserDetails.getUser();
         ResponseMessage response = ResponseMessage.builder()
                 .data(user.getEmail())

@@ -1,5 +1,6 @@
 package sparta.streaming.filter;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,20 +43,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String userId = jwtProvider.validate(token);
-            if (userId == null) {
+            Claims claims = jwtProvider.validate(token);
+            if (claims  == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            User user = userRepository.findByEmail(userId).orElse(null);
+            Long userId = claims.get("userId", Long.class);
+            String role = claims.get("role", String.class);
+
+            User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
             CustomUserDetails customUserDetails = new CustomUserDetails(user);
-            String role = user.getRole().toString(); // role은 반드시 이런 형태를 갖추고 있어야함 ROLE_USER, ROLE_ADMIN
+//            String role = user.getRole().toString(); // role은 반드시 이런 형태를 갖추고 있어야함 ROLE_USER, ROLE_ADMIN
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority(role));
 

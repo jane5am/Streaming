@@ -7,7 +7,8 @@ import java.util.Optional;
 
 
 public interface UserRepository extends JpaRepository<User, Long> { // 엔티티 클래스, PK의 타입
+//    Optional<User> findByEmail(Long userId);
     Optional<User> findByEmail(String email);
 
-    User findByUserId(Long userId);
+//    User findByUserId(Long userId);
 }
