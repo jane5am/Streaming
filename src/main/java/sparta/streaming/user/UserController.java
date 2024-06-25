@@ -4,10 +4,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import sparta.streaming.domain.*;
+import sparta.streaming.domain.user.CustomUserDetails;
+import sparta.streaming.domain.user.User;
 import sparta.streaming.dto.ResponseMessage;
 import sparta.streaming.dto.user.CreateUserRequestDto;
 import sparta.streaming.dto.user.PutUserRequestDto;
@@ -31,6 +30,7 @@ public class UserController {
     private UserService userService;
     private final JwtProvider jwtProvider;
     private final JwtBlacklist jwtBlacklist;
+
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<ResponseMessage> createUser(@RequestBody CreateUserRequestDto createUserRequestDto) throws BadRequestException {

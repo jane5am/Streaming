@@ -11,13 +11,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sparta.streaming.domain.CustomUserDetails;
-import sparta.streaming.domain.User;
+import sparta.streaming.domain.user.CustomUserDetails;
+import sparta.streaming.domain.user.User;
 import sparta.streaming.user.UserRepository;
 import sparta.streaming.user.provider.JwtProvider;
 

@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import sparta.streaming.domain.CustomOAuth2User;
+import sparta.streaming.domain.user.CustomOAuth2User;
 import sparta.streaming.user.provider.JwtProvider;
 
 import java.io.IOException;
