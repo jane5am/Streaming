@@ -78,12 +78,10 @@ public class VideoController {
 
     // user id로 동영상 찾기
     @GetMapping("/{userId}")
-    public ResponseEntity<ResponseMessage> getVideoByUserId( @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        Long userId = customUserDetails.getId();
-        System.out.println("userId : " + userId);
+    public ResponseEntity<ResponseMessage> getVideoByUserId( @PathVariable("userId") Long userId) {
 
         List<Video> video = videoService.getVideoByUserId(userId);
-        System.out.println("video : " + video);
+
         ResponseMessage response = ResponseMessage.builder()
                 .data(video)
                 .statusCode(200)
