@@ -1,18 +1,19 @@
 package sparta.streaming.user;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import sparta.streaming.domain.CustomOAuth2User;
-import sparta.streaming.domain.User;
+import sparta.streaming.domain.user.CustomOAuth2User;
+import sparta.streaming.domain.user.User;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
@@ -25,7 +26,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String oauthClientName = userRequest.getClientRegistration().getClientName();
         try {
-            System.out.println(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
+            log.info(new ObjectMapper().writeValueAsString(oAuth2User.getAttributes()));
         } catch (Exception exception) {
             exception.printStackTrace();
         }
@@ -35,15 +36,17 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String email = "email@email.com";
         String id = "";
         if( oauthClientName.equals("kakao")){
-//            type = "kakao_" +oAuth2User.getAttributes().get("id");
             id = "kakao_" +oAuth2User.getAttributes().get("id");
+            Map<String, Object> kakaoAccount = (Map<String, Object>) oAuth2User.getAttributes().get("kakao_account");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            name = (String) profile.get("nickname");
+
             user = new User(email, name, "kakao");
 
 
         }
         if(oauthClientName.equals("naver")){
             Map<String,String> responseMap = (Map<String,String>) oAuth2User.getAttributes().get("response");
-//            type = "naver_" + responseMap.get("id").substring(0,14);
             id = "naver_" + responseMap.get("id").substring(0,14);
 
             email = responseMap.get("email");
@@ -52,8 +55,6 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         }
 
         userRepository.save(user);
-        System.out.println("1111111111");
-        System.out.println("id : " + id);
         return new CustomOAuth2User(id); //사용자 정보 제공하여 토큰발행
     }
 }

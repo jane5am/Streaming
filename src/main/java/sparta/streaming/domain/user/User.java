@@ -1,4 +1,4 @@
-package sparta.streaming.domain;
+package sparta.streaming.domain.user;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
