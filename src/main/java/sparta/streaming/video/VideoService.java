@@ -32,6 +32,7 @@ public class VideoService {
         return videoRepository.save(video);
     }
 
+    // 동영상 수정
     public Video updateVideo(int videoId, VideoCommonDto videoCommonDto, Long userId) {
 
         Optional<Video> videoOptional = videoRepository.findByVideoId(videoId);
@@ -50,11 +51,22 @@ public class VideoService {
         return videoRepository.save(video);
 
     }
-//
-//    public void deleteVideo(Long videoId) {
-//        videoRepository.deleteById(videoId);
-//    }
-//
+
+    // 동영상 삭제
+    public void deleteVideo(int videoId, Long userId) {
+        Optional<Video> videoOptional = videoRepository.findByVideoId(videoId);
+
+        if (videoOptional.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
+            throw new RuntimeException("Video not found with id " + videoId);
+        }
+
+        if (!userId.equals(videoOptional.get().getUserId())) { // 요청한 사람, 비디오 올린사람 id
+            throw new AccessDeniedException("You do not have permission to access this video.");
+        }
+
+        videoRepository.deleteById(videoId);
+    }
+
 //    public Video getVideoById(Long videoId) {
 //        return videoRepository.findById(videoId)
 //                .orElseThrow(() -> new RuntimeException("Video not found with id " + videoId));

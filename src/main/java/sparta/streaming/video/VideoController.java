@@ -41,12 +41,12 @@ public class VideoController {
     }
 
     //동영상 수정
-    @PutMapping("/update")
-    public ResponseEntity<ResponseMessage> updateVideo(@RequestBody VideoCommonDto videoCommonDto,
+    @PutMapping("/update/{videoId}")
+    public ResponseEntity<ResponseMessage> updateVideo(@PathVariable("videoId") int videoId, @RequestBody VideoCommonDto videoCommonDto,
                                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getId();
 
-        Video updatedVideo = videoService.updateVideo(videoCommonDto.getVideoId(), videoCommonDto, userId);
+        Video updatedVideo = videoService.updateVideo(videoId, videoCommonDto, userId);
 
         ResponseMessage response = ResponseMessage.builder()
                 .data(updatedVideo)
@@ -56,18 +56,22 @@ public class VideoController {
 
         return ResponseEntity.ok(response);
     }
-//
-//    @DeleteMapping("/{videoId}/delete")
-//    public ResponseEntity<ResponseMessage> deleteVideo(@PathVariable Long videoId) {
-//        videoService.deleteVideo(videoId);
-//
-//        ResponseMessage response = ResponseMessage.builder()
-//                .statusCode(200)
-//                .resultMessage("Video deleted successfully")
-//                .build();
-//
-//        return ResponseEntity.ok(response);
-//    }
+
+    @DeleteMapping("/delete/{videoId}")
+    public ResponseEntity<ResponseMessage> deleteVideo(@PathVariable("videoId") int videoId
+                                                    , @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        Long userId = customUserDetails.getId();
+
+        videoService.deleteVideo(videoId,userId);
+
+        ResponseMessage response = ResponseMessage.builder()
+                .statusCode(200)
+                .resultMessage("Video deleted successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 //
 //    @GetMapping("/{videoId}")
 //    public ResponseEntity<ResponseMessage> getVideoById(@PathVariable Long videoId) {
