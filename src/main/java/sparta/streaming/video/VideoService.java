@@ -7,11 +7,14 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import sparta.streaming.domain.user.User;
 import sparta.streaming.domain.video.Video;
+import sparta.streaming.domain.video.VideoWatchHistory;
 import sparta.streaming.dto.video.CreateVideoRequestDto;
 import sparta.streaming.dto.video.UpdateVideoRequestDto;
 import sparta.streaming.dto.video.VideoCommonDto;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +24,7 @@ public class VideoService {
 
     @Autowired
     private final VideoRepository videoRepository;
+    private final VideoWatchHistoryRepository videoWatchHistoryRepository;
 
     // 동영상 등록
     public Video createVideo(VideoCommonDto videoCommonDto, Long userId) {
@@ -69,39 +73,73 @@ public class VideoService {
 
     //userId로 올린 동영상 찾기
     public List<Video> getVideoByUserId(Long userId) {
-        List<Video> videoOptional = videoRepository.findAllByUserId(userId);
+        List<Video> video = videoRepository.findAllByUserId(userId);
 
-        if (videoOptional.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
+        if (video.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
             throw new RuntimeException("Video not found with id " + userId);
         }
 
-        return videoRepository.findAllByUserId(userId);
+        return video;
     }
 
+    // 모든 동영상 조회
     public List<Video> getAllVideos() {
+
         return videoRepository.findAll();
     }
 
 
-//    /**
-//     * 특정 사용자와 동영상에 대한 시청 기록을 반환합니다.
-//     * 기록이 없으면 새로 생성합니다.
-//     */
-//    public VideoWatchHistory playVideo(Long videoId, Long userId) {
-//
-//        System.out.println(videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId));
-//        Optional<VideoWatchHistory> watchHistory = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
-//        System.out.println(watchHistory);
-//        return watchHistory.orElseGet(() -> new VideoWatchHistory(videoId, userId, 0,LocalDateTime.now(),"127.0.0.1"));
-//    }
-//    /**
-//     * 동영상 재생을 중단할 때 호출됩니다.
-//     * 현재 재생 위치를 시청 기록에 저장합니다.
-//     */
-////    public VideoWatchHistory saveWatchHistory(VideoWatchHistory watchHistory) {
-////        return videoRepository.save(watchHistory);
-////    }
-////
+    public VideoWatchHistory playVideo(int videoId, Long userId, String sourceIP) {
+        List<VideoWatchHistory> watchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
+
+        // 비디오가 존재하는지 확인
+        Optional<Video> videoOptional = videoRepository.findById(videoId);
+        if (videoOptional.isEmpty()) {
+            throw new RuntimeException("Video not found with id " + videoId);
+        }
+
+        if (!watchHistories.isEmpty()) {
+            // 시청 기록이 있는 경우, 가장 최근의 시청 기록을 찾음
+            VideoWatchHistory latestWatchHistory = watchHistories.get(watchHistories.size() - 1);
+            latestWatchHistory.setViewDate(LocalDateTime.now());
+            return latestWatchHistory;
+
+        } else {
+            // 최초 시청인 경우
+            VideoWatchHistory watchHistory = new VideoWatchHistory( userId,videoId, 0, LocalDateTime.now(), sourceIP);
+            return videoWatchHistoryRepository.save(watchHistory);
+        }
+    }
+
+    public void updatePlaybackPosition(int videoId, Long userId) {
+        List<VideoWatchHistory> watchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
+
+        if (!watchHistories.isEmpty()) {
+            // 시청 기록이 있는 경우, 가장 최근의 시청 기록을 찾음
+            VideoWatchHistory latestWatchHistory = watchHistories.get(watchHistories.size() - 1);
+
+            // viewDate로부터 현재까지의 경과 시간을 계산
+            Duration duration = Duration.between(latestWatchHistory.getViewDate(), LocalDateTime.now());
+            int elapsedTime = (int) duration.getSeconds();
+
+            Optional<Video> videoOptional = videoRepository.findById(videoId);
+            if (videoOptional.isEmpty()) {
+                throw new RuntimeException("Video not found with id " + videoId);
+            }
+            Video video = videoOptional.get();
+
+            if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getPlayTime()) {
+                // playTime을 초과하면 정지하고 playbackPosition을 0으로 설정
+                latestWatchHistory.setPlaybackPosition(0);
+            } else {
+                // playTime을 초과하지 않으면 경과 시간을 playbackPosition에 설정
+                latestWatchHistory.setPlaybackPosition(latestWatchHistory.getPlaybackPosition() + elapsedTime);
+            }
+
+            videoWatchHistoryRepository.save(latestWatchHistory);
+        }
+
+    }
 
 
 }

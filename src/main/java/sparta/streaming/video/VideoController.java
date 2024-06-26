@@ -1,21 +1,18 @@
 package sparta.streaming.video;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.streaming.domain.user.CustomUserDetails;
-import sparta.streaming.domain.user.User;
 import sparta.streaming.domain.video.Video;
+import sparta.streaming.domain.video.VideoWatchHistory;
 import sparta.streaming.dto.ResponseMessage;
-import sparta.streaming.dto.video.CreateVideoRequestDto;
-import sparta.streaming.dto.video.UpdateVideoRequestDto;
 import sparta.streaming.dto.video.VideoCommonDto;
 import sparta.streaming.user.provider.JwtProvider;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/video")
@@ -90,22 +87,67 @@ public class VideoController {
 
         return ResponseEntity.ok(response);
     }
-//
-//    @GetMapping
-//    public ResponseEntity<ResponseMessage> getAllVideos() {
-//        List<Video> videos = videoService.getAllVideos();
+
+    //모든 동영상 조회
+    @GetMapping
+    public ResponseEntity<ResponseMessage> getAllVideos() {
+
+        List<Video> videos = videoService.getAllVideos();
+
+        ResponseMessage response = ResponseMessage.builder()
+                .data(videos)
+                .statusCode(200)
+                .resultMessage("Videos retrieved successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    // 동영상 재생
+    @GetMapping("/play/{videoId}")
+    public ResponseEntity<ResponseMessage> playVideo(@PathVariable("videoId") int videoId,
+                                                     @AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                     HttpServletRequest request) {
+        String sourceIP = request.getRemoteAddr();
+        VideoWatchHistory watchHistory = videoService.playVideo(videoId, customUserDetails.getId(), sourceIP);
+
+        ResponseMessage response = ResponseMessage.builder()
+                .data(watchHistory)
+                .statusCode(200)
+                .resultMessage("Video played successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+//    // 동영상 정지
+//    @PostMapping("/pause/{videoId}")
+//    public ResponseEntity<ResponseMessage> updatePlaybackPosition(@PathVariable("videoId") int videoId,
+//                                                                  @RequestParam int playbackPosition,
+//                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+//        videoService.updatePlaybackPosition(videoId, customUserDetails.getId(), playbackPosition);
 //
 //        ResponseMessage response = ResponseMessage.builder()
-//                .data(videos)
 //                .statusCode(200)
-//                .resultMessage("Videos retrieved successfully")
+//                .resultMessage("Playback position updated successfully")
 //                .build();
 //
 //        return ResponseEntity.ok(response);
 //    }
 
 
+    @PostMapping("/{videoId}/pause")
+    public ResponseEntity<ResponseMessage> updatePlaybackPosition(@PathVariable("videoId") int videoId,
+                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        videoService.updatePlaybackPosition(videoId, customUserDetails.getId());
 
+        ResponseMessage response = ResponseMessage.builder()
+                .statusCode(200)
+                .resultMessage("Playback position updated successfully")
+                .build();
 
+        return ResponseEntity.ok(response);
+    }
 
 }
