@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 @Entity
@@ -30,11 +32,10 @@ public class Video {
 
     @Column(nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date uploadDate; // 업로드 날짜
+    private LocalDateTime uploadDate;
 
     @PrePersist
     protected void onCreate() {
-        this.uploadDate = new Date();
+        this.uploadDate = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
-
 }
