@@ -7,7 +7,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import sparta.streaming.domain.user.User;
 import sparta.streaming.domain.video.Video;
-import sparta.streaming.domain.video.VideoWatchHistory;
 import sparta.streaming.dto.video.CreateVideoRequestDto;
 import sparta.streaming.dto.video.UpdateVideoRequestDto;
 import sparta.streaming.dto.video.VideoCommonDto;
@@ -33,9 +32,9 @@ public class VideoService {
         return videoRepository.save(video);
     }
 
-    public Video updateVideo(Long videoId, VideoCommonDto videoCommonDto, Long userId) {
+    public Video updateVideo(int videoId, VideoCommonDto videoCommonDto, Long userId) {
 
-        Optional<Video> videoOptional = videoRepository.findById(videoId);
+        Optional<Video> videoOptional = videoRepository.findByVideoId(videoId);
 
         if (videoOptional.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
             throw new RuntimeException("Video not found with id " + videoId);

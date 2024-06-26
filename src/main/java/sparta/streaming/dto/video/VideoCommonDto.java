@@ -11,5 +11,6 @@ public class VideoCommonDto {
 
     private String title;
     private int playTime;
+    private int videoId;
 
 }

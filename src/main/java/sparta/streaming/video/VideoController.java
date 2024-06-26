@@ -7,7 +7,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.streaming.domain.user.CustomUserDetails;
 import sparta.streaming.domain.video.Video;
-import sparta.streaming.domain.video.VideoWatchHistory;
 import sparta.streaming.dto.ResponseMessage;
 import sparta.streaming.dto.video.CreateVideoRequestDto;
 import sparta.streaming.dto.video.UpdateVideoRequestDto;
@@ -42,12 +41,12 @@ public class VideoController {
     }
 
     //동영상 수정
-    @PutMapping("/update/{videoId}")
-    public ResponseEntity<ResponseMessage> updateVideo(@PathVariable Long videoId, @RequestBody VideoCommonDto videoCommonDto,
+    @PutMapping("/update")
+    public ResponseEntity<ResponseMessage> updateVideo(@RequestBody VideoCommonDto videoCommonDto,
                                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         Long userId = customUserDetails.getId();
 
-        Video updatedVideo = videoService.updateVideo(videoId, videoCommonDto, userId);
+        Video updatedVideo = videoService.updateVideo(videoCommonDto.getVideoId(), videoCommonDto, userId);
 
         ResponseMessage response = ResponseMessage.builder()
                 .data(updatedVideo)
