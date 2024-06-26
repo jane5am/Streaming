@@ -67,14 +67,21 @@ public class VideoService {
         videoRepository.deleteById(videoId);
     }
 
-//    public Video getVideoById(Long videoId) {
-//        return videoRepository.findById(videoId)
-//                .orElseThrow(() -> new RuntimeException("Video not found with id " + videoId));
-//    }
-//
-//    public List<Video> getAllVideos() {
-//        return videoRepository.findAll();
-//    }
+    //userId로 올린 동영상 찾기
+    public List<Video> getVideoByUserId(Long userId) {
+        List<Video> videoOptional = videoRepository.findAllByUserId(userId);
+        System.out.println("userId : " + userId);
+        System.out.println("videoOptional : " + videoOptional);
+        if (videoOptional.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
+            throw new RuntimeException("Video not found with id " + userId);
+        }
+
+        return videoRepository.findAllByUserId(userId);
+    }
+
+    public List<Video> getAllVideos() {
+        return videoRepository.findAll();
+    }
 
 
 //    /**

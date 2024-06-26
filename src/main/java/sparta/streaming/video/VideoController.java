@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sparta.streaming.domain.user.CustomUserDetails;
+import sparta.streaming.domain.user.User;
 import sparta.streaming.domain.video.Video;
 import sparta.streaming.dto.ResponseMessage;
 import sparta.streaming.dto.video.CreateVideoRequestDto;
@@ -14,6 +15,7 @@ import sparta.streaming.dto.video.VideoCommonDto;
 import sparta.streaming.user.provider.JwtProvider;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/video")
@@ -57,6 +59,7 @@ public class VideoController {
         return ResponseEntity.ok(response);
     }
 
+    //동영상 삭제
     @DeleteMapping("/delete/{videoId}")
     public ResponseEntity<ResponseMessage> deleteVideo(@PathVariable("videoId") int videoId
                                                     , @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -72,19 +75,23 @@ public class VideoController {
 
         return ResponseEntity.ok(response);
     }
-//
-//    @GetMapping("/{videoId}")
-//    public ResponseEntity<ResponseMessage> getVideoById(@PathVariable Long videoId) {
-//        Video video = videoService.getVideoById(videoId);
-//
-//        ResponseMessage response = ResponseMessage.builder()
-//                .data(video)
-//                .statusCode(200)
-//                .resultMessage("Video retrieved successfully")
-//                .build();
-//
-//        return ResponseEntity.ok(response);
-//    }
+
+    // user id로 동영상 찾기
+    @GetMapping("/{userId}")
+    public ResponseEntity<ResponseMessage> getVideoByUserId( @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long userId = customUserDetails.getId();
+        System.out.println("userId : " + userId);
+
+        List<Video> video = videoService.getVideoByUserId(userId);
+        System.out.println("video : " + video);
+        ResponseMessage response = ResponseMessage.builder()
+                .data(video)
+                .statusCode(200)
+                .resultMessage("Video retrieved successfully")
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 //
 //    @GetMapping
 //    public ResponseEntity<ResponseMessage> getAllVideos() {
