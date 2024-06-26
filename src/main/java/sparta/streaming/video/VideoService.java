@@ -88,7 +88,7 @@ public class VideoService {
         return videoRepository.findAll();
     }
 
-
+    // 동영상 재생
     public VideoWatchHistory playVideo(int videoId, Long userId, String sourceIP) {
         List<VideoWatchHistory> watchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
 
@@ -101,8 +101,17 @@ public class VideoService {
         if (!watchHistories.isEmpty()) {
             // 시청 기록이 있는 경우, 가장 최근의 시청 기록을 찾음
             VideoWatchHistory latestWatchHistory = watchHistories.get(watchHistories.size() - 1);
-            latestWatchHistory.setViewDate(LocalDateTime.now());
-            return latestWatchHistory;
+
+            VideoWatchHistory watchHistory ;
+
+            if( latestWatchHistory.getPlaybackPosition() == videoOptional.get().getPlayTime() ){// 이전에 모두봤을 경우
+                watchHistory = new VideoWatchHistory( userId,videoId,0, LocalDateTime.now(), sourceIP);
+
+            }else{
+                watchHistory = new VideoWatchHistory( userId,videoId, latestWatchHistory.getPlaybackPosition(), LocalDateTime.now(), sourceIP);
+
+            }
+            return videoWatchHistoryRepository.save(watchHistory);
 
         } else {
             // 최초 시청인 경우
@@ -113,31 +122,32 @@ public class VideoService {
 
     public void updatePlaybackPosition(int videoId, Long userId) {
         List<VideoWatchHistory> watchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
+        Optional<Video> videoOptional = videoRepository.findById(videoId);
 
-        if (!watchHistories.isEmpty()) {
-            // 시청 기록이 있는 경우, 가장 최근의 시청 기록을 찾음
-            VideoWatchHistory latestWatchHistory = watchHistories.get(watchHistories.size() - 1);
-
-            // viewDate로부터 현재까지의 경과 시간을 계산
-            Duration duration = Duration.between(latestWatchHistory.getViewDate(), LocalDateTime.now());
-            int elapsedTime = (int) duration.getSeconds();
-
-            Optional<Video> videoOptional = videoRepository.findById(videoId);
-            if (videoOptional.isEmpty()) {
-                throw new RuntimeException("Video not found with id " + videoId);
-            }
-            Video video = videoOptional.get();
-
-            if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getPlayTime()) {
-                // playTime을 초과하면 정지하고 playbackPosition을 0으로 설정
-                latestWatchHistory.setPlaybackPosition(0);
-            } else {
-                // playTime을 초과하지 않으면 경과 시간을 playbackPosition에 설정
-                latestWatchHistory.setPlaybackPosition(latestWatchHistory.getPlaybackPosition() + elapsedTime);
-            }
-
-            videoWatchHistoryRepository.save(latestWatchHistory);
+        // 비디오가 존재하는지 확인
+        if (videoOptional.isEmpty()) {
+            throw new RuntimeException("Video not found with id " + videoId);
         }
+
+        // 시청 기록이 있는 경우, 가장 최근의 시청 기록을 찾음
+        VideoWatchHistory latestWatchHistory = watchHistories.get(watchHistories.size() - 1);
+
+        // viewDate로부터 현재까지의 경과 시간을 계산
+        Duration duration = Duration.between(latestWatchHistory.getViewDate(), LocalDateTime.now());
+        int elapsedTime = (int) duration.getSeconds();
+
+        Video video = videoOptional.get();
+
+        if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getPlayTime()) {
+            // playTime을 초과하면 정지하고 playbackPosition을 0으로 설정
+            latestWatchHistory.setPlaybackPosition(videoOptional.get().getPlayTime());
+        } else {
+            // playTime을 초과하지 않으면 경과 시간을 playbackPosition에 설정
+            latestWatchHistory.setPlaybackPosition(latestWatchHistory.getPlaybackPosition() + elapsedTime);
+        }
+
+        videoWatchHistoryRepository.save(latestWatchHistory);
+
 
     }
 

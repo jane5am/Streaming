@@ -1,11 +1,13 @@
 package sparta.streaming.domain.video;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Data
@@ -27,6 +29,7 @@ public class VideoWatchHistory {
     @Column(name = "playbackPosition", nullable = false)
     private int playbackPosition; // 마지막 재생 시점
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "viewDate", nullable = false)
     private LocalDateTime viewDate; // 시청시간 (기본값 현재시간)
 
@@ -40,6 +43,11 @@ public class VideoWatchHistory {
         this.playbackPosition = playbackPosition;
         this.viewDate = viewDate;
         this.sourceIP = sourceIP;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.viewDate = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
 
 }

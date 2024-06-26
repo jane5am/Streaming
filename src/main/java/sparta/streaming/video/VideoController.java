@@ -110,34 +110,27 @@ public class VideoController {
                                                      @AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                      HttpServletRequest request) {
         String sourceIP = request.getRemoteAddr();
-        VideoWatchHistory watchHistory = videoService.playVideo(videoId, customUserDetails.getId(), sourceIP);
+        try {
+            VideoWatchHistory watchHistory = videoService.playVideo(videoId, customUserDetails.getId(), sourceIP);
 
-        ResponseMessage response = ResponseMessage.builder()
-                .data(watchHistory)
-                .statusCode(200)
-                .resultMessage("Video played successfully")
-                .build();
+            ResponseMessage response = ResponseMessage.builder()
+                    .data(watchHistory)
+                    .statusCode(200)
+                    .resultMessage("Video played successfully")
+                    .build();
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            ResponseMessage response = ResponseMessage.builder()
+                    .statusCode(400)
+                    .resultMessage(e.getMessage())
+                    .build();
+            return ResponseEntity.status(400).body(response);
+        }
     }
 
-//    // 동영상 정지
-//    @PostMapping("/pause/{videoId}")
-//    public ResponseEntity<ResponseMessage> updatePlaybackPosition(@PathVariable("videoId") int videoId,
-//                                                                  @RequestParam int playbackPosition,
-//                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-//        videoService.updatePlaybackPosition(videoId, customUserDetails.getId(), playbackPosition);
-//
-//        ResponseMessage response = ResponseMessage.builder()
-//                .statusCode(200)
-//                .resultMessage("Playback position updated successfully")
-//                .build();
-//
-//        return ResponseEntity.ok(response);
-//    }
-
-
-    @PostMapping("/{videoId}/pause")
+    // 동영상 정지
+    @PostMapping("/pause/{videoId}")
     public ResponseEntity<ResponseMessage> updatePlaybackPosition(@PathVariable("videoId") int videoId,
                                                                   @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         videoService.updatePlaybackPosition(videoId, customUserDetails.getId());
