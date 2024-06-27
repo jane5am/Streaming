@@ -15,6 +15,6 @@ import java.sql.Date;
 public class UpdateVideoRequestDto {
 
     private Long userId;
-    private int playTime;
+    private int length;
 
 }

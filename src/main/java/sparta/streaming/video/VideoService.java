@@ -31,7 +31,7 @@ public class VideoService {
         Video video = new Video();
         video.setUserId(userId);
         video.setTitle(videoCommonDto.getTitle());
-        video.setPlayTime(videoCommonDto.getPlayTime());
+        video.setLength(videoCommonDto.getLength());
         System.out.println("video.getUserId()" + video.getUserId());
         return videoRepository.save(video);
     }
@@ -50,7 +50,7 @@ public class VideoService {
         }
 
         Video video = videoOptional.get();
-        video.setPlayTime(videoCommonDto.getPlayTime());
+        video.setLength(videoCommonDto.getLength());
         video.setTitle(videoCommonDto.getTitle());
         return videoRepository.save(video);
 
@@ -104,7 +104,7 @@ public class VideoService {
 
             VideoWatchHistory watchHistory ;
 
-            if( latestWatchHistory.getPlaybackPosition() == videoOptional.get().getPlayTime() ){// 이전에 모두봤을 경우
+            if( latestWatchHistory.getPlaybackPosition() == videoOptional.get().getLength() ){// 이전에 모두봤을 경우
                 watchHistory = new VideoWatchHistory( userId,videoId,0, LocalDateTime.now(), sourceIP);
 
             }else{
@@ -138,9 +138,9 @@ public class VideoService {
 
         Video video = videoOptional.get();
 
-        if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getPlayTime()) {
+        if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getLength()) {
             // playTime을 초과하면 정지하고 playbackPosition을 0으로 설정
-            latestWatchHistory.setPlaybackPosition(videoOptional.get().getPlayTime());
+            latestWatchHistory.setPlaybackPosition(videoOptional.get().getLength());
         } else {
             // playTime을 초과하지 않으면 경과 시간을 playbackPosition에 설정
             latestWatchHistory.setPlaybackPosition(latestWatchHistory.getPlaybackPosition() + elapsedTime);

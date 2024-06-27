@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class VideoCommonDto {
 
     private String title;
-    private int playTime;
+    private int length;
     private int videoId;
 
 }

@@ -10,6 +10,6 @@ import java.util.Date;
 public class CreateVideoRequestDto extends VideoCommonDto {
 
     private Long userId;
-    private int playTime;
+    private int length;
 
 }
