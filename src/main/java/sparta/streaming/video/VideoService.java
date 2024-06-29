@@ -10,6 +10,7 @@ import sparta.streaming.domain.video.VideoAd;
 import sparta.streaming.domain.video.VideoWatchHistory;
 import sparta.streaming.dto.video.VideoCommonDto;
 
+import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -121,6 +122,7 @@ public class VideoService {
     //동영상 정지
     public void updatePlaybackPosition(int videoId, Long userId, String sourceIP) {
         List<VideoWatchHistory> watchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
+        List<AdWatchHistory> adWatchHistories = adWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
         Optional<Video> videoOptional = videoRepository.findById(videoId);
 
         // 비디오가 존재하는지 확인
@@ -138,8 +140,8 @@ public class VideoService {
         Video video = videoOptional.get();
 
         if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getPlayTime()) {
-            // playTime을 초과하면 정지하고 playbackPosition을 0으로 설정
-            latestWatchHistory.setPlaybackPosition(videoOptional.get().getPlayTime());
+            // playTime을 초과하면 정지하고 playbackPosition을 영상의 최대 시간으로 설정
+            latestWatchHistory.setPlaybackPosition(video.getPlayTime());
         } else {
             // playTime을 초과하지 않으면 경과 시간을 playbackPosition에 설정
             latestWatchHistory.setPlaybackPosition(latestWatchHistory.getPlaybackPosition() + elapsedTime);
@@ -147,21 +149,24 @@ public class VideoService {
 
         videoWatchHistoryRepository.save(latestWatchHistory);
 
+        List<VideoWatchHistory> updatedWatchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
+
         // 광고 시청 기록 추가
         int totalPlaybackTime = latestWatchHistory.getPlaybackPosition();
-        System.out.println("totalPlaybackTime : " + totalPlaybackTime);
 //        int adInterval = 5 * 60; // 5분 단위로 광고가 붙음
-        int adInterval = 30; // 5분 단위로 광고가 붙음
+        int adInterval = 10;
 
         List<VideoAd> videoAds = videoAdRepository.findByVideoId(videoId);
-        System.out.println("videoAds : " + videoAds);
-        for (int i = 0; i < videoAds.size(); i++) {
-            int adPosition = (i + 1) * adInterval;
+
+        // 유저가 시청할 수 있는 최대 광고 숫자
+        int maxAdsToWatch = updatedWatchHistories.size() * videoAds.size();
+
+        for (int i = adWatchHistories.size(); i < maxAdsToWatch; i++) {
+            int adPosition = ((i % videoAds.size()) + 1) * adInterval;
             if (totalPlaybackTime >= adPosition) {
-                saveAdWatchHistory(videoId, userId, sourceIP, videoAds.get(i).getAdId());
+                saveAdWatchHistory(videoId, userId, sourceIP, videoAds.get(i % videoAds.size()).getAdId());
             }
         }
-
     }
 
     // 광고 재생
