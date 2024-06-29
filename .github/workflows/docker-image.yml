@@ -34,14 +34,13 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build -x test
-        env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Print DB_USERNAME
+        run: |
+          echo "DB_USERNAME: ${{ secrets.DB_USERNAME }}"
 
       - name: Build Docker image
         run: docker build . -t hyejan/streaming:latest --build-arg DB_URL=${{ secrets.DB_URL }} --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} --build-arg JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
