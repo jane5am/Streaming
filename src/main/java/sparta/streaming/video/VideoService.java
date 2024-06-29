@@ -26,17 +26,17 @@ public class VideoService {
     private final VideoAdRepository videoAdRepository;
 
     // 동영상 등록
-    public Video createVideo(VideoCommonDto videoCommonDto, Long userId) {
+    public Video createVideo(VideoCommonDto videoCommonDto, Long creator) {
         Video video = new Video();
-        video.setUserId(userId);
+        video.setCreator(creator);
         video.setTitle(videoCommonDto.getTitle());
-        video.setLength(videoCommonDto.getLength());
-        System.out.println("video.getUserId()" + video.getUserId());
+        video.setPlayTime(videoCommonDto.getPlayTime());
+        System.out.println("video.getUserId()" + video.getCreator());
         return videoRepository.save(video);
     }
 
     // 동영상 수정
-    public Video updateVideo(int videoId, VideoCommonDto videoCommonDto, Long userId) {
+    public Video updateVideo(int videoId, VideoCommonDto videoCommonDto, Long creator) {
 
         Optional<Video> videoOptional = videoRepository.findByVideoId(videoId);
 
@@ -44,26 +44,26 @@ public class VideoService {
             throw new RuntimeException("Video not found with id " + videoId);
         }
 
-        if (!userId.equals(videoOptional.get().getUserId())) { // 요청한 사람, 비디오 올린사람 id
+        if (!creator.equals(videoOptional.get().getCreator())) { // 요청한 사람, 비디오 올린사람 id
             throw new AccessDeniedException("You do not have permission to access this video.");
         }
 
         Video video = videoOptional.get();
-        video.setLength(videoCommonDto.getLength());
+        video.setPlayTime(videoCommonDto.getPlayTime());
         video.setTitle(videoCommonDto.getTitle());
         return videoRepository.save(video);
 
     }
 
     // 동영상 삭제
-    public void deleteVideo(int videoId, Long userId) {
+    public void deleteVideo(int videoId, Long creator) {
         Optional<Video> videoOptional = videoRepository.findByVideoId(videoId);
 
         if (videoOptional.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
             throw new RuntimeException("Video not found with id " + videoId);
         }
 
-        if (!userId.equals(videoOptional.get().getUserId())) { // 요청한 사람, 비디오 올린사람 id
+        if (!creator.equals(videoOptional.get().getCreator())) { // 요청한 사람, 비디오 올린사람 id
             throw new AccessDeniedException("You do not have permission to access this video.");
         }
 
@@ -71,11 +71,11 @@ public class VideoService {
     }
 
     //userId로 올린 동영상 찾기
-    public List<Video> getVideoByUserId(Long userId) {
-        List<Video> video = videoRepository.findAllByUserId(userId);
+    public List<Video> getVideoByUserId(Long creator) {
+        List<Video> video = videoRepository.findAllByCreator(creator);
 
         if (video.isEmpty()) {// 비디오id가 우리 db에 있는지 확인
-            throw new RuntimeException("Video not found with id " + userId);
+            throw new RuntimeException("Video not found with id " + creator);
         }
 
         return video;
@@ -138,9 +138,9 @@ public class VideoService {
 
         Video video = videoOptional.get();
 
-        if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getLength()) {
+        if (latestWatchHistory.getPlaybackPosition() + elapsedTime >= video.getPlayTime()) {
             // playTime을 초과하면 정지하고 playbackPosition을 0으로 설정
-            latestWatchHistory.setPlaybackPosition(videoOptional.get().getLength());
+            latestWatchHistory.setPlaybackPosition(videoOptional.get().getPlayTime());
         } else {
             // playTime을 초과하지 않으면 경과 시간을 playbackPosition에 설정
             latestWatchHistory.setPlaybackPosition(latestWatchHistory.getPlaybackPosition() + elapsedTime);
@@ -169,17 +169,13 @@ public class VideoService {
     // 비디오가 재생되고 비디오 길이가 5분 이상이고 재생시간이 5분이상이다 그러면 해당 메소드 출력
     // 광고 시청기록에 save
     public void saveAdWatchHistory(int videoId, Long userId, String sourceIP, int adId) {
-        // 광고 시청 기록이 이미 존재하는지 확인
-        Optional<AdWatchHistory> existingAdWatchHistory = adWatchHistoryRepository.findByVideoIdAndAdIdAndUserId(videoId, adId, userId);
-        if (existingAdWatchHistory.isEmpty()) {
-            AdWatchHistory adWatchHistory = new AdWatchHistory();
-            adWatchHistory.setVideoId(videoId);
-            adWatchHistory.setAdId(adId);
-            adWatchHistory.setUserId(userId);
-            adWatchHistory.setViewDate(LocalDateTime.now());
-            adWatchHistory.setSourceIP(sourceIP);
-            adWatchHistoryRepository.save(adWatchHistory);
-        }
+        AdWatchHistory adWatchHistory = new AdWatchHistory();
+        adWatchHistory.setVideoId(videoId);
+        adWatchHistory.setAdId(adId);
+        adWatchHistory.setUserId(userId);
+        adWatchHistory.setViewDate(LocalDateTime.now());
+        adWatchHistory.setSourceIP(sourceIP);
+        adWatchHistoryRepository.save(adWatchHistory);
 
     }
 

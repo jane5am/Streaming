@@ -9,7 +9,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 public class CreateVideoRequestDto extends VideoCommonDto {
 
-    private Long userId;
-    private int length;
+    private Long creator;
+    private int playTime;
 
 }

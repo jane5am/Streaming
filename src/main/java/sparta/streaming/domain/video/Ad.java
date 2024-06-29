@@ -32,7 +32,7 @@ public class Ad {
     private LocalDateTime uploadDate; // 업로드 날짜
 
     @Column(nullable = false)
-    private int length;// 광고 길이
+    private int playTime;// 광고 길이
 
     @PrePersist
     protected void onCreate() {
