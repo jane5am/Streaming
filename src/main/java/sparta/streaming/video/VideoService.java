@@ -101,23 +101,22 @@ public class VideoService {
             // 시청 기록이 있는 경우, 가장 최근의 시청 기록을 찾음
             VideoWatchHistory latestWatchHistory = watchHistories.get(watchHistories.size() - 1);
 
-            VideoWatchHistory watchHistory;
-
-            if (latestWatchHistory.getPlaybackPosition() == videoOptional.get().getLength()) {// 이전에 모두봤을 경우
-                watchHistory = new VideoWatchHistory(userId, videoId, 0, LocalDateTime.now(), sourceIP);
-
+            // 이전에 모두 봤을 경우 새로운 row 생성
+            if (latestWatchHistory.getPlaybackPosition() == videoOptional.get().getPlayTime()) {
+                VideoWatchHistory watchHistory = new VideoWatchHistory(userId, videoId, 0, LocalDateTime.now(), sourceIP);
+                return videoWatchHistoryRepository.save(watchHistory);
             } else {
-                watchHistory = new VideoWatchHistory(userId, videoId, latestWatchHistory.getPlaybackPosition(), LocalDateTime.now(), sourceIP);
-
+                latestWatchHistory.setViewDate(LocalDateTime.now());
+                latestWatchHistory.setSourceIP(sourceIP);
+                return videoWatchHistoryRepository.save(latestWatchHistory);
             }
-            return videoWatchHistoryRepository.save(watchHistory);
-
         } else {
             // 최초 시청인 경우
-            VideoWatchHistory watchHistory = new VideoWatchHistory(userId, videoId, 30, LocalDateTime.now(), sourceIP);
+            VideoWatchHistory watchHistory = new VideoWatchHistory(userId, videoId, 0, LocalDateTime.now(), sourceIP);
             return videoWatchHistoryRepository.save(watchHistory);
         }
     }
+
 
     //동영상 정지
     public void updatePlaybackPosition(int videoId, Long userId, String sourceIP) {
