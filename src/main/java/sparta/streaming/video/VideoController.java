@@ -22,7 +22,7 @@ public class VideoController {
     private final VideoService videoService;
     private final JwtProvider jwtProvider;
 
-//    @AuthenticationPrincipal
+    // 비디오 등록
     @PostMapping("/create")
     public ResponseEntity<ResponseMessage> createVideo(@RequestBody VideoCommonDto videoCommonDto,
                                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -132,8 +132,11 @@ public class VideoController {
     // 동영상 정지
     @PostMapping("/pause/{videoId}")
     public ResponseEntity<ResponseMessage> updatePlaybackPosition(@PathVariable("videoId") int videoId,
-                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        videoService.updatePlaybackPosition(videoId, customUserDetails.getId());
+                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                                  HttpServletRequest request)
+    {
+        String sourceIP = request.getRemoteAddr();
+        videoService.updatePlaybackPosition(videoId, customUserDetails.getId(), sourceIP);
 
         ResponseMessage response = ResponseMessage.builder()
                 .statusCode(200)

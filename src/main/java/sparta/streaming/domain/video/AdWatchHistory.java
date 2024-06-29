@@ -8,38 +8,38 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Video {
+public class AdWatchHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+    private int adWatchHistoryId;
+
+    @Column(nullable = false)
     private int videoId;
 
-    @Column(name = "userId", nullable = false)
+    @Column(nullable = false)
+    private int adId;
+
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false)
-    private String title;
-
-    @Column(name = "length", nullable = false)
-    private int length; // 동영상 길이
-
-    @Column(nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime uploadDate;
+    private LocalDateTime viewDate; // 시청시각 (기본값 현재시각)
 
     @Column(nullable = false)
-    private int views;
+    private String sourceIP; // 시청한 사용자 IP주소
 
     @PrePersist
     protected void onCreate() {
-        this.uploadDate = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-        this.views = 0; // 기본값을 0으로 설정
+        this.viewDate = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
 
 }

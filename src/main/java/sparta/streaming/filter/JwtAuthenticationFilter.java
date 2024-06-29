@@ -52,14 +52,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = claims.get("userId", Long.class);
             String role = claims.get("role", String.class);
 
-//            User user = userRepository.findById(userId).orElse(null);
-//            if (user == null) {
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
-//
-//            CustomUserDetails customUserDetails = new CustomUserDetails(user);
-
             // CustomUserDetails 객체 생성
             CustomUserDetails customUserDetails = new CustomUserDetails(userId, role);
 
