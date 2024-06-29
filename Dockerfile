@@ -1,11 +1,15 @@
-
 FROM openjdk:17-jdk-slim
 
-WORKDIR /app
+ARG DB_URL
+ARG DB_USERNAME
+ARG DB_PASSWORD
+ARG JWT_SECRET_KEY
 
-# 소스 코드 및 JAR 파일 복사
-COPY build/libs/*.jar /app/streaming.jar
+ENV DB_URL=$DB_URL
+ENV DB_USERNAME=$DB_USERNAME
+ENV DB_PASSWORD=$DB_PASSWORD
+ENV JWT_SECRET_KEY=$JWT_SECRET_KEY
 
-EXPOSE 8080
+COPY build/libs/*.jar app.jar
 
-ENTRYPOINT ["java", "-jar", "/app/streaming.jar"]
+ENTRYPOINT ["java", "-jar", "/app.jar"]
