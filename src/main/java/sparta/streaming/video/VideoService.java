@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import sparta.streaming.domain.video.AdWatchHistory;
-import sparta.streaming.domain.video.Video;
-import sparta.streaming.domain.video.VideoAd;
-import sparta.streaming.domain.video.VideoWatchHistory;
+import sparta.streaming.domain.video.*;
 import sparta.streaming.dto.video.VideoCommonDto;
 
 import javax.swing.text.html.Option;
@@ -15,16 +12,21 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
 public class VideoService {
+
+    private static final int AD_INTERVAL = 5 * 60; // 300초 (5분) 당 한 개의 광고
+    private static final int AD_PLAYTIME = 30; // 광고 길이를 30초로 설정 (필요에 따라 조정 가능)
 
     @Autowired
     private final VideoRepository videoRepository;
     private final VideoWatchHistoryRepository videoWatchHistoryRepository;
     private final AdWatchHistoryRepository adWatchHistoryRepository;
     private final VideoAdRepository videoAdRepository;
+    private final AdRepository adRepository;
 
     // 동영상 등록
     public Video createVideo(VideoCommonDto videoCommonDto, Long creator) {
@@ -32,8 +34,38 @@ public class VideoService {
         video.setCreator(creator);
         video.setTitle(videoCommonDto.getTitle());
         video.setPlayTime(videoCommonDto.getPlayTime());
-        System.out.println("video.getUserId()" + video.getCreator());
+
+        Video savedVideo = videoRepository.save(video);
+
+        int adCount = videoCommonDto.getPlayTime() / AD_INTERVAL;
+        List<Ad> adList = adRepository.findAll();
+        Random random = new Random();
+
+        for (int i = 1; i < adCount; i++) {
+            if ((Math.random() > 0.7)) {
+                Ad ad = createAd("Ad content for video " + savedVideo.getVideoId() + ", ad " + (i + 1));
+                createVideoAd(savedVideo.getVideoId(), ad.getAdId());
+            } else { // 있는 거 가져옴
+                int randomAdId = random.nextInt(adList.size()) + 1;
+                createVideoAd(savedVideo.getVideoId(), randomAdId);
+            }
+        }
+
         return videoRepository.save(video);
+    }
+
+    private Ad createAd(String content) {
+        Ad ad = new Ad();
+        ad.setContent(content);
+        ad.setPlayTime(AD_PLAYTIME);
+        return adRepository.save(ad);
+    }
+
+    private void createVideoAd(int videoId, int adId) {
+        VideoAd videoAd = new VideoAd();
+        videoAd.setVideoId(videoId);
+        videoAd.setAdId(adId);
+        videoAdRepository.save(videoAd);
     }
 
     // 동영상 수정

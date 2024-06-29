@@ -21,9 +21,6 @@ public class Ad {
     @Column(name = "id", nullable = false)
     private int adId;
 
-    @Column(name = "userId", nullable = false)
-    private Long userId;
-
     @Column(name = "content", nullable = false)
     private String content; // 광고 내용
 
