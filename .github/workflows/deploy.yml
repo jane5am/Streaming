@@ -1,20 +1,50 @@
-name: Deploy to EC2
+name: Build, Push, and Deploy to EC2
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - dev
 
 jobs:
-  deploy:
+  build_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 1. Checkout repository
         uses: actions/checkout@v3
 
-      - name: SSH into EC2 and deploy
+      - name: 2. Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 3. Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 4. Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: 5. Build with Gradle
+        run: ./gradlew build -x test
+
+      - name: 6. Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: 7. Build Docker image
+        run: docker build -t hyejan/streaming:latest --build-arg DB_URL=${{ secrets.DB_URL }} --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} --build-arg JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} --build-arg KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} --build-arg KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} --build-arg KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} --build-arg KAKO_AUTHORIZATIONGRANT_TYPE=${{ secrets.KAKO_AUTHORIZATIONGRANT_TYPE }} --build-arg KAKAO_CLIENT_AUTHENTICATION_METHOD=${{ secrets.KAKAO_CLIENT_AUTHENTICATION_METHOD }} --build-arg KAKAO_SCOPE=${{ secrets.KAKAO_SCOPE }} --build-arg KAKAO_AUTHORIZATION_URI=${{ secrets.KAKAO_AUTHORIZATION_URI }} --build-arg KAKAO_TOKEN_URI=${{ secrets.KAKAO_TOKEN_URI }} --build-arg KAKAO_USER_INFO_URI=${{ secrets.KAKAO_USER_INFO_URI }} --build-arg KAKAO_USER_NAME_ATTRIBUTE=${{ secrets.KAKAO_USER_NAME_ATTRIBUTE }} --build-arg NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} --build-arg NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} --build-arg NAVER_REDIRECT_URI=${{ secrets.NAVER_REDIRECT_URI }} --build-arg NAVER_AUTHORIZATION_GRANT_TYPE=${{ secrets.NAVER_AUTHORIZATION_GRANT_TYPE }} --build-arg NAVER_SCOPE=${{ secrets.NAVER_SCOPE }} --build-arg NAVER_AUTHORIZATION_URI=${{ secrets.NAVER_AUTHORIZATION_URI }} --build-arg NAVER_TOKEN_URI=${{ secrets.NAVER_TOKEN_URI }} --build-arg NAVER_USER_INFO_URI=${{ secrets.NAVER_USER_INFO_URI }} --build-arg NAVER_USER_NAME_ATTRIBUTE=${{ secrets.NAVER_USER_NAME_ATTRIBUTE }} .
+
+      - name: 8. Push Docker image to Docker Hub
+        run: docker push hyejan/streaming:latest
+
+      - name: 9. SSH into EC2 and deploy
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.EC2_HOST }}
