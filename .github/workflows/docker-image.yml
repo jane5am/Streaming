@@ -43,7 +43,7 @@ jobs:
           echo "DB_USERNAME: ${{ secrets.DB_USERNAME }}"
 
       - name: Build Docker image
-        run: docker build . -t hyejan/streaming:latest \
+        run: docker build -t hyejan/streaming:latest \
           --build-arg DB_URL=${{ secrets.DB_URL }} \
           --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} \
           --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
@@ -66,7 +66,8 @@ jobs:
           --build-arg NAVER_AUTHORIZATION_URI=${{ secrets.NAVER_AUTHORIZATION_URI }} \
           --build-arg NAVER_TOKEN_URI=${{ secrets.NAVER_TOKEN_URI }} \
           --build-arg NAVER_USER_INFO_URI=${{ secrets.NAVER_USER_INFO_URI }} \
-          --build-arg NAVER_USER_NAME_ATTRIBUTE=${{ secrets.NAVER_USER_NAME_ATTRIBUTE }}
+          --build-arg NAVER_USER_NAME_ATTRIBUTE=${{ secrets.NAVER_USER_NAME_ATTRIBUTE }} \
+          .
 
       - name: Push Docker image to Docker Hub
         run: docker push hyejan/streaming:latest
