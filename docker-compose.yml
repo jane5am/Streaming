@@ -2,12 +2,8 @@ version: '3.8'
 
 services:
   app:
-    image: streaming
+    image: hyejan/streaming
     container_name: streaming
-    environment:
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8080:8080"
     networks:
