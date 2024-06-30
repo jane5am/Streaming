@@ -40,24 +40,21 @@ public class WebSecurityConfig {
     @Bean
     protected SecurityFilterChain configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors(cors -> cors
-                .configurationSource(corsConfigurationSource())
-        )
-        .csrf(CsrfConfigurer::disable)
-        .httpBasic(HttpBasicConfigurer::disable)
+                        .configurationSource(corsConfigurationSource())
+                )
+                .csrf(CsrfConfigurer::disable)
+                .httpBasic(HttpBasicConfigurer::disable)
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)//세션유지하지않겠다
-        )
-                .authorizeHttpRequests(request -> request
-                    .requestMatchers("/","/api/v1/auth/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
-                    .requestMatchers("/","/api/v1/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
-                    .requestMatchers("/","/api/v1/video/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
-                    .requestMatchers("/","/api/v1/user/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
-                    .requestMatchers("/","/api/v1/user/signup/**","/oauth2/**").permitAll() //이 패턴에 대해서는 모두 허용하겠다
-                    .requestMatchers("/api/v1/user/**").hasRole("USER")
-                    .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                                    .anyRequest().authenticated()
                 )
-                    .oauth2Login(oauth2 -> oauth2
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers("/", "/api/v1/auth/**", "/oauth2/**").permitAll() // 이 패턴에 대해서는 모두 허용
+                        .requestMatchers("/api/v1/video/**").permitAll() // 이 패턴에 대해서는 모두 허용
+                        .requestMatchers("/api/v1/user/**").permitAll() // 이 패턴에 대해서는 모두 허용
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN") // ADMIN 롤이 필요한 경로
+                        .anyRequest().authenticated() // 그 외 나머지 요청은 인증 필요
+                )
+                .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(endpoint -> endpoint.baseUri("/api/v1/auth/oauth2"))
                         .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
                         .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserService))
