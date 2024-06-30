@@ -110,6 +110,7 @@ public class VideoController {
                                                      @AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                      HttpServletRequest request) {
         String sourceIP = request.getRemoteAddr();
+        System.out.println("sourceIP = " + sourceIP);
         try {
             VideoWatchHistory watchHistory = videoService.playVideo(videoId, customUserDetails.getId(), sourceIP);
 

@@ -54,4 +54,4 @@ jobs:
             docker pull hyejan/streaming:latest
             docker stop streaming || true
             docker rm streaming || true
-            docker run -d -p 80:8080 --name streaming hyejan/streaming:latest
+            docker run -d -p 80:8080 --name streaming --rm hyejan/streaming:latest
