@@ -14,7 +14,7 @@ import java.sql.Date;
 @EqualsAndHashCode(callSuper = false)
 public class UpdateVideoRequestDto {
 
-    private Long userId;
+    private Long creator;
     private int playTime;
 
 }

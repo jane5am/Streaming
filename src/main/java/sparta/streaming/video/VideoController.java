@@ -22,13 +22,13 @@ public class VideoController {
     private final VideoService videoService;
     private final JwtProvider jwtProvider;
 
-//    @AuthenticationPrincipal
+    // 비디오 등록
     @PostMapping("/create")
     public ResponseEntity<ResponseMessage> createVideo(@RequestBody VideoCommonDto videoCommonDto,
                                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        Long userId = customUserDetails.getId();
+        Long creator = customUserDetails.getId();
 
-        Video createdVideo = videoService.createVideo(videoCommonDto, userId);
+        Video createdVideo = videoService.createVideo(videoCommonDto, creator);
 
         ResponseMessage response = ResponseMessage.builder()
                 .data(createdVideo)
@@ -43,9 +43,9 @@ public class VideoController {
     @PutMapping("/update/{videoId}")
     public ResponseEntity<ResponseMessage> updateVideo(@PathVariable("videoId") int videoId, @RequestBody VideoCommonDto videoCommonDto,
                                                        @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        Long userId = customUserDetails.getId();
+        Long creator = customUserDetails.getId();
 
-        Video updatedVideo = videoService.updateVideo(videoId, videoCommonDto, userId);
+        Video updatedVideo = videoService.updateVideo(videoId, videoCommonDto, creator);
 
         ResponseMessage response = ResponseMessage.builder()
                 .data(updatedVideo)
@@ -61,9 +61,9 @@ public class VideoController {
     public ResponseEntity<ResponseMessage> deleteVideo(@PathVariable("videoId") int videoId
                                                     , @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-        Long userId = customUserDetails.getId();
+        Long creator = customUserDetails.getId();
 
-        videoService.deleteVideo(videoId,userId);
+        videoService.deleteVideo(videoId,creator);
 
         ResponseMessage response = ResponseMessage.builder()
                 .statusCode(200)
@@ -74,10 +74,10 @@ public class VideoController {
     }
 
     // user id로 동영상 찾기
-    @GetMapping("/{userId}")
-    public ResponseEntity<ResponseMessage> getVideoByUserId( @PathVariable("userId") Long userId) {
+    @GetMapping("/{creator}")
+    public ResponseEntity<ResponseMessage> getVideoByUserId( @PathVariable("creator") Long creator) {
 
-        List<Video> video = videoService.getVideoByUserId(userId);
+        List<Video> video = videoService.getVideoByUserId(creator);
 
         ResponseMessage response = ResponseMessage.builder()
                 .data(video)
@@ -110,6 +110,7 @@ public class VideoController {
                                                      @AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                      HttpServletRequest request) {
         String sourceIP = request.getRemoteAddr();
+        System.out.println("sourceIP = " + sourceIP);
         try {
             VideoWatchHistory watchHistory = videoService.playVideo(videoId, customUserDetails.getId(), sourceIP);
 
@@ -132,8 +133,11 @@ public class VideoController {
     // 동영상 정지
     @PostMapping("/pause/{videoId}")
     public ResponseEntity<ResponseMessage> updatePlaybackPosition(@PathVariable("videoId") int videoId,
-                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        videoService.updatePlaybackPosition(videoId, customUserDetails.getId());
+                                                                  @AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                                  HttpServletRequest request)
+    {
+        String sourceIP = request.getRemoteAddr();
+        videoService.updatePlaybackPosition(videoId, customUserDetails.getId(), sourceIP);
 
         ResponseMessage response = ResponseMessage.builder()
                 .statusCode(200)
