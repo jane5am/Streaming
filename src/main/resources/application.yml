@@ -41,14 +41,20 @@ spring:
             user-info-uri: ${NAVER_USER_INFO_URI}
             user-name-attribute: ${NAVER_USER_NAME_ATTRIBUTE}
 
-
   sql:
     init:
       mode: always
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
 jwt:
   secret: ${JWT_SECRET_KEY}
+  expiration-time: 8640000
 
 logging:
   level:
-    root=info:
+    root: info

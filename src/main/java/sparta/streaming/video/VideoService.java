@@ -11,8 +11,10 @@ import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +29,7 @@ public class VideoService {
     private final AdWatchHistoryRepository adWatchHistoryRepository;
     private final VideoAdRepository videoAdRepository;
     private final AdRepository adRepository;
+    private final RedisService redisService;
 
     // 동영상 등록
     public Video createVideo(VideoCommonDto videoCommonDto, Long creator) {
@@ -123,6 +126,24 @@ public class VideoService {
     // 동영상 재생
     public VideoWatchHistory playVideo(int videoId, Long userId, String sourceIP) {
         List<VideoWatchHistory> watchHistories = videoWatchHistoryRepository.findByVideoIdAndUserId(videoId, userId);
+
+        // 유효한 사용자인지 확인
+        // 1. videoId에서 creator과 userId이 같은지 확인한다. 같으면 throw
+        // false
+        boolean checkUser = !Objects.equals(userId, videoRepository.findByVideoId(videoId).get().getCreator());
+        if (!checkUser) {
+            throw new RuntimeException("User is the creator of the video");
+        }
+
+        // 2. sourceIP를 redis에 저장한다. redis에 이미 존재하는 sourceIP일경우 throw
+        // false
+        if (redisService.getData(sourceIP) != null) {
+            throw new RuntimeException("Source IP already exists in Redis");
+        } else {
+            redisService.saveDataWithTTL(sourceIP, 1, 30, TimeUnit.SECONDS);
+        }
+        System.out.println("redisService.getData(sourceIP) : " + redisService.getData(sourceIP));
+
 
         // 비디오가 존재하는지 확인
         Optional<Video> videoOptional = videoRepository.findById(videoId);
