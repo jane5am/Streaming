@@ -44,13 +44,14 @@ public class VideoService {
         List<Ad> adList = adRepository.findAll();
         Random random = new Random();
 
-        for (int i = 1; i < adCount; i++) {
-            if ((Math.random() > 0.7)) {
+        for (int i = 1; i <= adCount; i++) {
+            if (adList.isEmpty() || Math.random() > 0.7) {
                 Ad ad = createAd("Ad content for video " + savedVideo.getVideoId() + ", ad " + (i + 1));
                 createVideoAd(savedVideo.getVideoId(), ad.getAdId());
-            } else { // 있는 거 가져옴
-                int randomAdId = random.nextInt(adList.size()) + 1;
-                createVideoAd(savedVideo.getVideoId(), randomAdId);
+            } else { // 있는 광고 가져옴
+                int randomAdIndex = random.nextInt(adList.size());
+                Ad selectedAd = adList.get(randomAdIndex);
+                createVideoAd(savedVideo.getVideoId(), selectedAd.getAdId());
             }
         }
 
@@ -166,7 +167,7 @@ public class VideoService {
             }
         } else {
             // 최초 시청인 경우
-            VideoWatchHistory watchHistory = new VideoWatchHistory(userId, videoId, 0, LocalDateTime.now(), sourceIP);
+            VideoWatchHistory watchHistory = new VideoWatchHistory(userId, videoId, 1200, LocalDateTime.now(), sourceIP);
             return videoWatchHistoryRepository.save(watchHistory);
         }
     }
@@ -207,12 +208,13 @@ public class VideoService {
         // 광고 시청 기록 추가
         int totalPlaybackTime = latestWatchHistory.getPlaybackPosition();
 //        int adInterval = 5 * 60; // 5분 단위로 광고가 붙음
-        int adInterval = 10;
+        int adInterval = 5;
 
         List<VideoAd> videoAds = videoAdRepository.findByVideoId(videoId);
 
         // 유저가 시청할 수 있는 최대 광고 숫자
         int maxAdsToWatch = updatedWatchHistories.size() * videoAds.size();
+        System.out.println("maxAdsToWatch : " + maxAdsToWatch);
 
         for (int i = adWatchHistories.size(); i < maxAdsToWatch; i++) {
             int adPosition = ((i % videoAds.size()) + 1) * adInterval;
